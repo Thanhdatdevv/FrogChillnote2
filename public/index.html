@@ -3,65 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Tài Xỉu FrogChill của đạt</title>
+    <title>Sòng Bạc Tài Xỉu Han nghênh các con nghiện</title>
     <style>
-        body { background: #0b0f19; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .game-container { width: 100%; max-width: 800px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .main-game { background: #151d30; padding: 20px; border-radius: 12px; border: 1px solid #233253; text-align: center; }
-        .chat-section { background: #151d30; padding: 15px; border-radius: 12px; border: 1px solid #233253; display: flex; flex-direction: column; height: 500px; }
-        .header-info { display: flex; justify-content: space-between; background: #1e2942; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
-        .timer { font-size: 48px; color: #ff9f43; margin: 20px 0; font-weight: bold; text-shadow: 0 0 10px rgba(255,159,67,0.5); }
-        .dice-display { font-size: 36px; background: #0b0f19; padding: 15px; border-radius: 50px; display: inline-block; letter-spacing: 10px; margin-bottom: 20px; border: 2px dashed #ff9f43; }
-        .bet-buttons { display: flex; gap: 20px; justify-content: center; margin: 20px 0; }
-        .btn-bet { padding: 15px 40px; font-size: 20px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; color: white; width: 140px; }
-        .btn-tai { background: #ee5253; box-shadow: 0 4px 15px rgba(238,82,83,0.4); }
-        .btn-xiu { background: #10ac84; box-shadow: 0 4px 15px rgba(16,172,132,0.4); }
-        .btn-bet:active { transform: scale(0.95); }
-        .bet-input { background: #1e2942; border: 1px solid #34495e; color: white; padding: 10px; border-radius: 6px; width: 60%; font-size: 16px; text-align: center; }
-        .history { margin-top: 20px; background: #0b0f19; padding: 10px; border-radius: 6px; text-align: left; }
-        .dot { display: inline-block; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; font-size: 12px; font-weight: bold; margin-right: 5px; color: #fff; }
-        .dot-tai { background: #ee5253; }
-        .dot-xiu { background: #10ac84; }
-        #chat-content { flex: 1; overflow-y: auto; background: #0b0f19; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
-        .chat-input-group { display: flex; gap: 5px; }
-        .chat-input { flex: 1; background: #1e2942; border: 1px solid #34495e; color: white; padding: 8px; border-radius: 4px; }
+        :root { --bg-main: #0a0d14; --bg-card: #141923; --gold: #ffd700; --tai-color: #ff4d4d; --xiu-color: #00db80; }
+        body { background: var(--bg-main); color: #e1e7f0; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-wrapper { width: 100%; max-width: 950px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        
+        /* Giao diện Auth */
+        .auth-container { background: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid #222d3f; text-align: center; max-width: 400px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-container input { width: 90%; background: #0a0d14; border: 1px solid #2a374e; padding: 12px; margin: 8px 0; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
+        .auth-btn { width: 96%; background: linear-gradient(135deg, #f39c12, #d35400); border: none; color: white; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        
+        /* Khu vực Game */
+        .main-board { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #222d3f; text-align: center; position: relative; }
+        .user-panel { display: flex; justify-content: space-between; background: #1c2331; padding: 12px 20px; border-radius: 8px; font-weight: bold; border-left: 4px solid var(--gold); margin-bottom: 15px; }
+        .status-txt { color: #8a99ad; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .countdown { font-size: 55px; font-weight: 900; color: var(--gold); margin: 10px 0; text-shadow: 0 0 15px rgba(255,215,0,0.4); }
+        
+        /* Bát Xúc Xắc */
+        .plate-zone { background: #0a0d14; padding: 15px 30px; border-radius: 50px; display: inline-block; border: 2px solid #222d3f; font-size: 42px; margin: 15px 0; }
+        .result-title { font-size: 22px; font-weight: bold; color: var(--gold); margin-bottom: 25px; }
+        
+        /* Khu vực nút cược */
+        .bet-row { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .bet-box { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 24px; color: #fff; border: 1px solid transparent; }
+        .box-tai { background: linear-gradient(145deg, #cc2e2e, #851c1c); box-shadow: 0 5px 15px rgba(204,46,46,0.3); }
+        .box-xiu { background: linear-gradient(145deg, #00b368, #00663c); box-shadow: 0 5px 15px rgba(0,179,104,0.3); }
+        .bet-box:active { transform: scale(0.97); }
+        .bet-box span { display: block; font-size: 13px; font-weight: normal; margin-top: 5px; opacity: 0.8; }
+        
+        .input-money { background: #0a0d14; border: 1px solid #2a374e; color: #fff; padding: 12px; border-radius: 6px; width: 60%; font-size: 16px; text-align: center; font-weight: bold; margin: 10px 0; }
+        
+        /* Thống kê lịch sử */
+        .history-box { margin-top: 20px; background: #0a0d14; padding: 12px; border-radius: 8px; text-align: left; }
+        .circle { display: inline-block; width: 26px; height: 26px; border-radius: 50%; text-align: center; line-height: 26px; font-size: 13px; font-weight: bold; margin-right: 6px; margin-top: 5px; color: #fff; }
+        .c-tai { background: var(--tai-color); }
+        .c-xiu { background: var(--xiu-color); }
+        
+        /* Chatbox */
+        .chat-container { background: var(--bg-card); border: 1px solid #222d3f; border-radius: 12px; display: flex; flex-direction: column; height: 550px; padding: 15px; box-sizing: border-box; }
+        #chat-logs { flex: 1; overflow-y: auto; background: #0a0d14; padding: 10px; border-radius: 6px; font-size: 13.5px; margin-bottom: 10px; }
+        .chat-input-bar { display: flex; gap: 6px; }
+        .chat-input-bar input { flex: 1; background: #0a0d14; border: 1px solid #2a374e; padding: 10px; border-radius: 4px; color: #fff; outline: none; }
+        .chat-input-bar button { background: #3867d6; border: none; color: white; padding: 0 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="game-container">
-    <div class="main-game">
-        <div class="header-info">
-            <span id="player-name">Đang tải...</span>
-            <span style="color: #6c5ce7;">Số dư: <span id="player-balance">0</span>đ</span>
+<div id="auth-screen" class="auth-container">
+    <h2 style="color: var(--gold); margin-top: 0;">CASINO TÀI XỈU</h2>
+    <p style="color: #8a99ad; font-size: 13px;">Đăng ký tài khoản nhận ngay 500,000đ trải nghiệm</p>
+    <input type="text" id="auth-user" placeholder="Tên tài khoản...">
+    <input type="password" id="auth-pass" placeholder="Mật khẩu...">
+    <button class="auth-btn" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
+    <button class="auth-btn" style="background:#2a374e; margin-top:8px;" onclick="handleAuth('register')">ĐĂNG KÝ TÀI KHOẢN</button>
+</div>
+
+<div id="game-screen" class="app-wrapper" style="display: none;">
+    <div class="main-board">
+        <div class="user-panel">
+            <span id="lb-user">User: ...</span>
+            <span style="color: var(--gold);">Số dư: <span id="lb-balance">0</span> đ</span>
         </div>
 
-        <div id="game-status" style="margin-top: 15px; font-size: 18px; color: #b2bec3;">Trạng thái</div>
-        <div class="timer" id="game-timer">30</div>
+        <div id="game-status" class="status-txt">ĐANG ĐỢI PHIÊN...</div>
+        <div class="countdown" id="game-timer">00</div>
 
-        <div>Kết quả phiên trước:</div>
-        <div class="dice-display" id="dice-result">🎲 🎲 🎲</div>
-        <div id="total-result" style="font-size: 18px; font-weight: bold; color: #ff9f43; margin-bottom: 20px;">Tổng: 0 -> Xỉu</div>
+        <div style="font-size: 13px; color: #8a99ad;">KẾT QUẢ XÚC XẮC:</div>
+        <div class="plate-zone" id="dice-view">🎲 🎲 🎲</div>
+        <div class="result-title" id="total-view">Tổng: 0 ➔ ...</div>
 
-        <input type="number" id="bet-amount" class="bet-input" value="10000" placeholder="Nhập số tiền cược...">
+        <input type="number" id="bet-val" class="input-money" value="50000" step="10000">
         
-        <div class="bet-buttons">
-            <button class="btn-bet btn-tai" onclick="bet('Tài')">TÀI<br><span id="total-tai" style="font-size:12px; font-weight:normal;">0đ</span></button>
-            <button class="btn-bet btn-xiu" onclick="bet('Xỉu')">XỈU<br><span id="total-xiu" style="font-size:12px; font-weight:normal;">0đ</span></button>
+        <div class="bet-row">
+            <div class="bet-box box-tai" onclick="sendBet('Tài')">TÀI<span>Tổng cược: <span id="sum-tai">0đ</span></span></div>
+            <div class="bet-box box-xiu" onclick="sendBet('Xỉu')">XỈU<span>Tổng cược: <span id="sum-xiu">0đ</span></span></div>
         </div>
 
-        <div class="history">
-            <div style="margin-bottom: 8px; font-size: 14px; color: #b2bec3;">Lịch sử phiên:</div>
-            <div id="history-dots"></div>
+        <div class="history-box">
+            <div style="font-size: 13px; color: #8a99ad; font-weight: bold;">LỊCH SỬ PHIÊN GẦN ĐÂY:</div>
+            <div id="history-list"></div>
         </div>
     </div>
 
-    <div class="chat-section">
-        <h3 style="margin-top: 0; border-bottom: 1px solid #233253; padding-bottom: 10px;">💬 Chat Trực Tuyến</h3>
-        <div id="chat-content"></div>
-        <div class="chat-input-group">
-            <input type="text" id="chat-msg" class="chat-input" placeholder="Nhập nội dung...">
-            <button style="background: #6c5ce7; border: none; color: white; padding: 0 15px; border-radius: 4px; cursor: pointer;" onclick="sendChat()">Gửi</button>
+    <div class="chat-container">
+        <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #222d3f; padding-bottom: 8px; color: var(--gold);">💬 CHAT TRỰC TUYẾN</h4>
+        <div id="chat-logs"></div>
+        <div class="chat-input-bar">
+            <input type="text" id="chat-txt" placeholder="Nhập tin nhắn..." onkeypress="if(event.keyCode===13) pressChat()">
+            <button onclick="pressChat()">GỬI</button>
         </div>
     </div>
 </div>
@@ -69,67 +99,93 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    let currentBalance = 0;
+    let clientUsername = "";
 
-    socket.on('init-player', (data) => {
-        document.getElementById('player-name').innerText = data.name;
-        document.getElementById('player-balance').innerText = data.balance.toLocaleString();
-        currentBalance = data.balance;
+    // Xử lý Đăng ký / Đăng nhập qua API
+    function handleAuth(type) {
+        const username = document.getElementById('auth-user').value.trim();
+        const password = document.getElementById('auth-pass').value.trim();
+        if(!username || !password) return alert("Vui lòng nhập đầy đủ thông tin!");
+
+        fetch(`/api/${type}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.msg || (data.status === 'success' ? 'Đăng nhập thành công!' : ''));
+            if(data.status === 'success' && type === 'login') {
+                clientUsername = data.user.username;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'grid';
+                document.getElementById('lb-user').innerText = `User: ${data.user.username}`;
+                
+                // Kích hoạt socket định danh
+                socket.emit('join-game', clientUsername);
+            }
+        });
+    }
+
+    // Nhận cập nhật số dư ví
+    socket.on('update-balance', (balance) => {
+        document.getElementById('lb-balance').innerText = balance.toLocaleString();
     });
 
-    socket.on('update-balance', (newBalance) => {
-        document.getElementById('player-balance').innerText = newBalance.toLocaleString();
-        currentBalance = newBalance;
-    });
-
+    // Cập nhật bộ đếm thời gian và lịch sử phiên theo giây
     socket.on('time-update', (state) => {
         document.getElementById('game-timer').innerText = state.timeRemaining;
-        document.getElementById('game-status').innerText = state.status + '...';
-        document.getElementById('total-tai').innerText = state.totalTai.toLocaleString() + 'đ';
-        document.getElementById('total-xiu').innerText = state.totalXiu.toLocaleString() + 'đ';
-        
-        // Vẽ lại chuỗi lịch sử hạt tròn
-        const historyDiv = document.getElementById('history-dots');
-        historyDiv.innerHTML = '';
-        state.history.forEach(item => {
+        document.getElementById('game-status').innerText = state.status;
+        document.getElementById('sum-tai').innerText = state.totalTai.toLocaleString() + 'đ';
+        document.getElementById('sum-xiu').innerText = state.totalXiu.toLocaleString() + 'đ';
+
+        // Khởi tạo đồ thị lịch sử chuỗi phiên tròn
+        const histList = document.getElementById('history-list');
+        histList.innerHTML = '';
+        state.history.forEach(h => {
             const span = document.createElement('span');
-            span.className = `dot ${item.type === 'Tài' ? 'dot-tai' : 'dot-xiu'}`;
-            span.innerText = item.type === 'Tài' ? 'T' : 'X';
-            span.title = `Tổng: ${item.total}`;
-            historyDiv.appendChild(span);
+            span.className = `circle ${h.type === 'Tài' ? 'c-tai' : 'c-xiu'}`;
+            span.innerText = h.type === 'Tài' ? 'T' : 'X';
+            span.title = `Tổng nút: ${h.total}`;
+            histList.appendChild(span);
         });
     });
 
-    socket.on('game-result', (result) => {
-        // Đổi emoji hiển thị xí ngầu tương ứng kết quả thực tế
-        const diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        document.getElementById('dice-result').innerText = `${diceEmojis[result.dice[0]-1]} ${diceEmojis[result.dice[1]-1]} ${diceEmojis[result.dice[2]-1]}`;
-        document.getElementById('total-result').innerText = `Tổng: ${result.total} -> ${result.type}`;
+    // Nhận kết quả mở thưởng xúc xắc công khai
+    socket.on('game-result', (res) => {
+        const diceMap = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        document.getElementById('dice-view').innerText = `${diceMap[res.dice[0]-1]} ${diceMap[res.dice[1]-1]} ${diceMap[res.dice[2]-1]}`;
+        document.getElementById('total-view').innerText = `Tổng: ${res.total} ➔ [${res.type}]`;
     });
 
-    socket.on('notification', (msg) => {
-        alert(msg);
+    // Thông báo kết quả Thắng/Thua riêng của cá nhân
+    socket.on('bet-result', (data) => {
+        alert(data.msg);
+        document.getElementById('lb-balance').innerText = data.newBalance.toLocaleString();
     });
 
-    function bet(type) {
-        const amount = parseInt(document.getElementById('bet-amount').value);
-        if(!amount || amount <= 0) return alert('Số tiền cược không hợp lệ');
+    socket.on('notification', (msg) => alert(msg));
+
+    // Thực hiện đặt cược
+    function sendBet(type) {
+        const amount = parseInt(document.getElementById('bet-val').value);
+        if(!amount || amount <= 0) return alert('Số tiền cược không đúng!');
         socket.emit('place-bet', { type, amount });
     }
 
-    // Xử lý gửi chat
-    function sendChat() {
-        const input = document.getElementById('chat-msg');
-        if(input.value.trim() !== '') {
-            socket.emit('send-chat', input.value);
-            input.value = '';
+    // Xử lý gửi tin nhắn Chatbox
+    function pressChat() {
+        const txt = document.getElementById('chat-txt');
+        if(txt.value.trim() !== '') {
+            socket.emit('send-chat', txt.value);
+            txt.value = '';
         }
     }
 
     socket.on('receive-chat', (data) => {
-        const chatContent = document.getElementById('chat-content');
-        chatContent.innerHTML += `<div><strong>${data.name}:</strong> ${data.message}</div>`;
-        chatContent.scrollTop = chatContent.scrollHeight; // Tự cuộn xuống tin nhắn mới nhất
+        const logs = document.getElementById('chat-logs');
+        logs.innerHTML += `<div><span style="color:#f39c12; font-weight:bold;">${data.name}:</span> ${data.message}</div>`;
+        logs.scrollTop = logs.scrollHeight;
     });
 </script>
 </body>
