@@ -9,52 +9,65 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Cơ sở dữ liệu lưu trữ tài khoản và số dư (Lưu trong RAM)
 let users = {}; 
-// Danh sách lưu thông tin cược của phiên hiện tại: { socketId: { username, type, amount } }
 let currentBets = {}; 
 
-// Trạng thái game toàn cục
 let gameState = {
     timeRemaining: 30,
-    status: 'Bắt đầu cược', // 'Bắt đầu cược' hoặc 'Đang mở mắt'
+    status: 'Bắt đầu cược',
     lastResult: { dice: [1, 2, 3], total: 6, type: 'Xỉu' },
-    history: [], // Lưu 12 phiên gần nhất
+    history: [],
     totalTai: 0,
     totalXiu: 0
 };
 
-// --- API ĐĂNG KÝ / ĐĂNG NHẬP ---
+// Hàm trích xuất UID hoặc username từ link Facebook của người dùng
+function extractFacebookID(url) {
+    if (!url) return "100000000000000";
+    // Tìm các chuỗi số UID dạng id=... hoặc profile.php?id=... hoặc chuỗi số cuối đường dẫn
+    const matchId = url.match(/(?:id=|\/|profile\.php\?id=)([0-9]{8,})/);
+    if (matchId) return matchId[1];
+    // Nếu là dạng username (ví dụ: facebook.com/thanhdat), tạm trả về username hoặc chuỗi mẫu để tạo avt sinh động
+    const matchUser = url.match(/facebook\.com\/([^/?#]+)/);
+    return matchUser ? matchUser[1] : "100000000000000";
+}
+
+// --- API HỆ THỐNG TÀI KHOẢN ---
 app.post('/api/register', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.json({ status: 'error', msg: 'Vui lòng điền đầy đủ thông tin!' });
-    if (users[username]) return res.json({ status: 'error', msg: 'Tài khoản này đã tồn tại!' });
+    const { username, password, fbLink, fbName } = req.body;
+    if (!username || !password || !fbLink || !fbName) {
+        return res.json({ status: 'error', msg: 'Vui lòng nhập đầy đủ các trường bắt buộc!' });
+    }
+    if (users[username]) return res.json({ status: 'error', msg: 'Tài khoản này đã tồn tại trên hệ thống!' });
     
-    // Tạo tài khoản mới và tặng 500.000đ
+    const targetID = extractFacebookID(fbLink);
+    const avatarUrl = `https://graph.facebook.com/${targetID}/picture?height=720&width=720&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
+
     users[username] = {
-        username: username,
-        password: password,
-        balance: 500000
+        username,
+        password,
+        fbName,
+        fbLink,
+        avatarUrl,
+        balance: 500000 // Tặng ngay 500k trải nghiệm
     };
-    res.json({ status: 'success', msg: 'Đăng ký thành công! Hãy đăng nhập.' });
+    res.json({ status: 'success', msg: 'Đăng ký tài khoản thành công!' });
 });
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     if (!users[username] || users[username].password !== password) {
-        return res.json({ status: 'error', msg: 'Tài khoản hoặc mật khẩu không đúng!' });
+        return res.json({ status: 'error', msg: 'Tài khoản hoặc mật khẩu không chính xác!' });
     }
-    res.json({ status: 'success', user: { username: username, balance: users[username].balance } });
+    res.json({ status: 'success', user: users[username] });
 });
 
-
-// --- VÒNG LẶP LOGIC GAME REALTIME ---
+// --- GAME LOOP ---
 setInterval(() => {
     if (gameState.timeRemaining > 0) {
         gameState.timeRemaining--;
     } else {
         if (gameState.status === 'Bắt đầu cược') {
-            // 1. Hết giờ cược -> Lắc xúc xắc ngẫu nhiên
             const d1 = Math.floor(Math.random() * 6) + 1;
             const d2 = Math.floor(Math.random() * 6) + 1;
             const d3 = Math.floor(Math.random() * 6) + 1;
@@ -66,43 +79,52 @@ setInterval(() => {
             if (gameState.history.length > 12) gameState.history.shift();
 
             gameState.status = 'Đang mở mắt';
-            gameState.timeRemaining = 10; // Đợi 10 giây xem kết quả và trả thưởng
+            gameState.timeRemaining = 10;
 
-            // 2. XỬ LÝ FIX LỖI: TỰ ĐỘNG TÍNH TOÁN TRẢ THƯỞNG CHO AI THẮNG
+            let winners = [];
+
+            // Xử lý tính toán thưởng/phạt và phát thông báo cá nhân/công khai
             for (const socketId in currentBets) {
                 const betInfo = currentBets[socketId];
                 if (users[betInfo.username]) {
                     if (betInfo.type === type) {
-                        // Thắng cược: Cộng lại tiền gốc + tiền thưởng (X2 số tiền cược)
                         const winAmount = betInfo.amount * 2;
                         users[betInfo.username].balance += winAmount;
-                        
-                        // Gửi thông báo thắng riêng cho socket đó
+                        winners.push(users[betInfo.username].fbName);
+
                         io.to(socketId).emit('bet-result', { 
                             status: 'win', 
-                            msg: `🎉 Chúc mừng! Bạn đoán đúng cửa ${type} và nhận được +${winAmount.toLocaleString()}đ`,
+                            amount: winAmount,
                             newBalance: users[betInfo.username].balance
                         });
                     } else {
-                        // Thua cược: Đã trừ tiền từ lúc đặt nên chỉ cần gửi thông báo thua
                         io.to(socketId).emit('bet-result', { 
                             status: 'lose', 
-                            msg: `😭 Rất tiếc! Kết quả là ${type}, bạn đã cược sai.`,
                             newBalance: users[betInfo.username].balance
                         });
                     }
                 }
             }
 
-            // Phát kết quả xí ngầu cho mọi người xem công khai
             io.emit('game-result', gameState.lastResult);
+
+            // Gửi thông báo danh sách người chiến thắng vào hộp chat toàn hệ thống
+            if (winners.length > 0) {
+                io.emit('receive-chat', {
+                    system: true,
+                    message: `🏆 Các đại gia thắng phiên [${type}]: ${winners.join(', ')}`
+                });
+            } else {
+                io.emit('receive-chat', {
+                    system: true,
+                    message: `📉 Phiên này kết quả [${type}], không có ai ăn được tiền cược!`
+                });
+            }
             
-            // Xóa sạch dữ liệu cược của phiên cũ để chuẩn bị phiên mới
             currentBets = {};
             gameState.totalTai = 0;
             gameState.totalXiu = 0;
         } else {
-            // Hết 10 giây xem kết quả -> Sang phiên cược mới
             gameState.status = 'Bắt đầu cược';
             gameState.timeRemaining = 30;
         }
@@ -110,11 +132,9 @@ setInterval(() => {
     io.emit('time-update', gameState);
 }, 1000);
 
-// --- KẾT NỐI SOCKET ONLINE ---
 io.on('connection', (socket) => {
     let currentLoggedUser = null;
 
-    // Đăng ký định danh User khi họ đăng nhập thành công ngoài client
     socket.on('join-game', (username) => {
         if (users[username]) {
             currentLoggedUser = username;
@@ -122,48 +142,61 @@ io.on('connection', (socket) => {
         }
     });
 
-    // XỬ LÝ FIX LỖI: ĐẶT CƯỢC (CHẶN CƯỢC 2 CỬA)
     socket.on('place-bet', (data) => {
         if (!currentLoggedUser) return socket.emit('notification', 'Bạn chưa đăng nhập!');
-        if (gameState.status !== 'Bắt đầu cược') return socket.emit('notification', 'Hết thời gian đặt cược phiên này!');
+        if (gameState.status !== 'Bắt đầu cược') return socket.emit('notification', 'Hết thời gian đặt cược!');
 
         const { type, amount } = data;
         const user = users[currentLoggedUser];
 
         if (user.balance < amount || amount <= 0) {
-            return socket.emit('notification', 'Số dư không đủ hoặc số tiền cược không hợp lệ!');
+            return socket.emit('notification', 'Số dư tài khoản của bạn không đủ!');
         }
-
-        // BIỆN PHÁP CHẶN CƯỢC 2 CỬA: Kiểm tra nếu socket này đã đặt cược cửa khác trước đó
         if (currentBets[socket.id]) {
-            return socket.emit('notification', `Bạn đã cược cửa [${currentBets[socket.id].type}] rồi, không được cược thêm cửa khác!`);
+            return socket.emit('notification', `Bạn đã đặt cửa [${currentBets[socket.id].type}], không được cược 2 bên!`);
         }
 
-        // Trừ tiền tài khoản ngay khi click đặt cược hợp lệ
         user.balance -= amount;
-        
-        // Lưu thông tin cược vào hệ thống tính thưởng của phiên
-        currentBets[socket.id] = {
-            username: currentLoggedUser,
-            type: type,
-            amount: amount
-        };
+        currentBets[socket.id] = { username: currentLoggedUser, type, amount };
 
         if (type === 'Tài') gameState.totalTai += amount;
         if (type === 'Xỉu') gameState.totalXiu += amount;
 
         socket.emit('update-balance', user.balance);
-        io.emit('time-update', gameState); // Cập nhật tổng số tiền hiển thị lên thanh cửa cược
-        socket.emit('notification', `Đặt cược thành công ${amount.toLocaleString()}đ vào cửa [${type}]`);
+        io.emit('time-update', gameState);
+        
+        // Phát thông báo ai cược bao nhiêu lên khung chat của cả phòng
+        io.emit('receive-chat', {
+            system: true,
+            message: `💸 Người chơi [${user.fbName}] vừa tất tay cược ${amount.toLocaleString()}đ vào cửa [${type}]`
+        });
     });
 
-    // Chatbox đồng bộ toàn bộ server
     socket.on('send-chat', (msg) => {
         if (!currentLoggedUser) return;
-        io.emit('receive-chat', { name: currentLoggedUser, message: msg });
+        const user = users[currentLoggedUser];
+        io.emit('receive-chat', { 
+            system: false,
+            name: user.username, 
+            fbName: user.fbName,
+            avatarUrl: user.avatarUrl,
+            fbLink: user.fbLink,
+            balance: user.balance,
+            message: msg 
+        });
     });
+
+    socket.on('get-profile', (targetUsername, callback) => {
+        if (users[targetUsername]) {
+            callback({ status: 'success', data: users[targetUsername] });
+        } else {
+            callback({ status: 'error' });
+        }
+    });
+
+    socket.on('disconnect', () => {});
 });
 
 http.listen(PORT, () => {
-    console.log(`Server chạy ổn định tại port ${PORT}`);
+    console.log(`Server Tài Xỉu Cyberpunk Premium trực tuyến tại cổng: ${PORT}`);
 });
