@@ -5,64 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sòng Bạc Tài Xỉu Hoàng Gia</title>
     <style>
-        :root { --bg-dark: #07090e; --bg-card: #111622; --neon-gold: #ffb900; --red-glow: #ff3838; --green-glow: #00e676; }
+        :root { 
+            --bg-dark: #07090e; 
+            --bg-card: #111622; 
+            --neon-gold: #ffb900; 
+            --red-glow: #ff3838; 
+            --green-glow: #00e676; 
+            --cyber-blue: #00f0ff;
+        }
         * { box-sizing: border-box; }
         body { background: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Menu Sidebar Gốc Trái Trên */
-        .menu-trigger { position: fixed; top: 15px; left: 15px; background: var(--bg-card); border: 1px solid #232d42; padding: 10px 15px; border-radius: 6px; cursor: pointer; color: var(--neon-gold); font-weight: bold; z-index: 99; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        /* Menu Sidebar */
+        .menu-trigger { position: fixed; top: 15px; left: 15px; background: var(--bg-card); border: 1px solid #232d42; padding: 10px 15px; border-radius: 6px; cursor: pointer; color: var(--neon-gold); font-weight: bold; z-index: 99; font-size: 14px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(255, 185, 0, 0.2); }
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--bg-card); border-right: 1px solid #232d42; z-index: 100; transition: 0.3s; padding: 70px 20px 20px 20px; box-shadow: 5px 0 25px rgba(0,0,0,0.7); }
         .sidebar.active { left: 0; }
         .sidebar-close { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; color: #a0aec0; }
-        .menu-item { display: block; padding: 12px; background: #171f30; border-radius: 6px; margin-bottom: 12px; text-decoration: none; color: #fff; font-weight: bold; text-align: center; cursor: pointer; border: 1px solid transparent; }
-        .menu-item:hover { border-color: var(--neon-gold); }
+        .menu-item { display: block; padding: 12px; background: #171f30; border-radius: 6px; margin-bottom: 12px; text-decoration: none; color: #fff; font-weight: bold; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .menu-item:hover { border-color: var(--neon-gold); box-shadow: 0 0 10px rgba(255,185,0,0.3); }
         
-        /* Auth layout biệt lập */
-        .auth-wrapper { max-width: 400px; margin: 60px auto padding 20px; width: 90%; }
-        .auth-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid #232d42; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Auth layout biệt lập - Đã Fix lỗi lệch bố cục */
+        .auth-wrapper { max-width: 400px; margin: 100px auto 20px auto; width: 90%; }
+        .auth-card { background: var(--bg-card); padding: 30px 25px; border-radius: 12px; border: 1px solid #232d42; box-shadow: 0 0 20px rgba(0, 240, 255, 0.15); }
         .pass-group { position: relative; width: 100%; }
-        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; user-select: none; }
-        input { width: 100%; background: #07090e; border: 1px solid #232d42; padding: 12px; margin: 8px 0; border-radius: 6px; color: #fff; outline: none; font-size: 14px; }
-        .btn-action { width: 100%; background: linear-gradient(135deg, #ff9f43, #ff6b6b); border: none; color: white; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 15px; }
+        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; user-select: none; z-index: 5; }
+        input { width: 100%; background: #07090e; border: 1px solid #232d42; padding: 12px; margin: 10px 0; border-radius: 6px; color: #fff; outline: none; font-size: 14px; transition: 0.3s; }
+        input:focus { border-color: var(--cyber-blue); box-shadow: 0 0 8px rgba(0, 240, 255, 0.3); }
+        .btn-action { width: 100%; background: linear-gradient(135deg, #ff9f43, #ff6b6b); border: none; color: white; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); transition: 0.2s; }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6); }
 
         /* Game Main Layout */
-        .game-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; max-width: 1000px; margin: 70px auto 20px auto; padding: 0 15px; }
+        .game-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; max-width: 1100px; margin: 70px auto 20px auto; padding: 0 15px; }
         @media (max-width: 768px) { .game-grid { grid-template-columns: 1fr; } }
         
-        .board-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #232d42; text-align: center; }
+        .board-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #232d42; text-align: center; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         .profile-bar { display: flex; align-items: center; justify-content: space-between; background: #171f30; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--neon-gold); }
         .user-meta { display: flex; align-items: center; gap: 8px; }
         .mini-avatar { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--neon-gold); object-fit: cover; }
         
-        .timer-view { font-size: 50px; font-weight: 900; color: var(--neon-gold); margin: 5px 0; text-shadow: 0 0 15px rgba(255,185,0,0.3); }
-        .dice-box { background: #07090e; padding: 10px 25px; border-radius: 50px; display: inline-block; font-size: 40px; margin: 10px 0; border: 1px dashed var(--neon-gold); }
+        .timer-view { font-size: 55px; font-weight: 900; color: var(--neon-gold); margin: 5px 0; text-shadow: 0 0 20px rgba(255,185,0,0.5); }
+        .dice-box { background: #07090e; padding: 12px 30px; border-radius: 50px; display: inline-block; font-size: 45px; margin: 12px 0; border: 2px dashed var(--neon-gold); box-shadow: 0 0 15px rgba(255,185,0,0.2); }
         
-        /* Cược */
-        .bet-container { display: flex; gap: 12px; margin-top: 15px; }
-        .bet-btn { flex: 1; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 22px; color: white; cursor: pointer; text-align: center; }
-        .b-tai { background: linear-gradient(135deg, #d63031, #811112); box-shadow: 0 4px 15px rgba(214,48,49,0.3); }
-        .b-xiu { background: linear-gradient(135deg, #00b894, #00624f); box-shadow: 0 4px 15px rgba(0,184,148,0.3); }
-        .bet-btn span { display: block; font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9; }
+        /* Nút Cược Phát Sáng */
+        .bet-container { display: flex; gap: 15px; margin-top: 15px; }
+        .bet-btn { flex: 1; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 24px; color: white; cursor: pointer; text-align: center; transition: 0.2s; }
+        .bet-btn:hover { transform: scale(1.02); }
+        .b-tai { background: linear-gradient(135deg, #ff3838, #b31010); box-shadow: 0 0 15px rgba(255, 56, 56, 0.4); }
+        .b-xiu { background: linear-gradient(135deg, #00e676, #007a3e); box-shadow: 0 0 15px rgba(0, 230, 118, 0.4); }
+        .bet-btn span { display: block; font-size: 13px; font-weight: normal; margin-top: 5px; opacity: 0.9; letter-spacing: 0.5px; }
 
-        /* Lịch sử tròn */
+        /* Lịch sử phiên */
         .dot-row { margin-top: 15px; background: #07090e; padding: 10px; border-radius: 8px; text-align: left; overflow-x: auto; white-space: nowrap; }
         .h-dot { display: inline-block; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 11px; font-weight: bold; margin-right: 5px; color: white; }
-        .dt-tai { background: var(--red-glow); }
-        .dt-xiu { background: var(--green-glow); }
+        .dt-tai { background: var(--red-glow); box-shadow: 0 0 8px var(--red-glow); }
+        .dt-xiu { background: var(--green-glow); box-shadow: 0 0 8px var(--green-glow); }
 
-        /* Chatbox Box */
-        .chat-wrapper { background: var(--bg-card); border: 1px solid #232d42; border-radius: 12px; display: flex; flex-direction: column; height: 520px; padding: 12px; position: relative; overflow: hidden; }
+        /* Chatbox */
+        .chat-wrapper { background: var(--bg-card); border: 1px solid #232d42; border-radius: 12px; display: flex; flex-direction: column; height: 600px; padding: 12px; position: relative; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         #chat-view { flex: 1; overflow-y: auto; background: #07090e; padding: 10px; border-radius: 6px; margin-bottom: 8px; }
-        .chat-line { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; cursor: pointer; }
+        .chat-line { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
         .chat-avt { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #4a5568; }
         .chat-body { background: #171f30; padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 13px; }
+        
+        /* Hiệu ứng Tên Admin Chạy Bảy Màu */
+        .admin-rainbow {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 2px;
+            background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 400% 400%;
+            animation: rainbow_animation 4s ease infinite;
+        }
+        @keyframes rainbow_animation {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
         .chat-name { font-weight: bold; color: var(--neon-gold); font-size: 12px; margin-bottom: 2px; }
-        .sys-line { background: rgba(255, 185, 0, 0.1); border-left: 3px solid var(--neon-gold); padding: 6px 10px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-radius: 0 4px 4px 0; }
+        .sys-line { background: rgba(255, 185, 0, 0.08); border-left: 3px solid var(--neon-gold); padding: 8px 10px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-radius: 0 4px 4px 0; box-shadow: inset 0 0 5px rgba(255,185,0,0.05); }
 
-        /* Profile View Panel bên trong Chatbox */
+        .chat-input-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+
+        /* Footer Thông tin chủ Web cực đẹp phong cách Cyberpunk */
+        .admin-footer { background: linear-gradient(180deg, #171f30 0%, #0c121e 100%); border: 1px solid #232d42; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 12px; border-left: 4px solid var(--cyber-blue); box-shadow: 0 0 10px rgba(0, 240, 255, 0.1); }
+        .admin-footer-avt { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--cyber-blue); object-fit: cover; box-shadow: 0 0 8px var(--cyber-blue); }
+        .admin-footer-info { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: #a0aec0; }
+        .admin-footer-name { font-weight: bold; color: #fff; font-size: 13px; display: flex; align-items: center; gap: 4px; }
+        .admin-footer-link { color: var(--cyber-blue); text-decoration: none; font-weight: bold; transition: 0.2s; }
+        .admin-footer-link:hover { text-shadow: 0 0 5px var(--cyber-blue); color: #fff; }
+
+        /* Profile Panel bên trong Chatbox */
         .profile-overlay { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: var(--bg-card); transition: 0.3s; z-index: 10; padding: 15px; display: flex; flex-direction: column; }
         .profile-overlay.open { left: 0; }
         .back-chat-btn { cursor: pointer; font-weight: bold; color: var(--neon-gold); display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
+        .editable-avatar { position: relative; display: inline-block; cursor: pointer; }
+        .editable-avatar::after { content: "📸 ĐỔI ẢNH"; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; width: 100%; padding: 4px 0; border-bottom-left-radius: 50px; border-bottom-right-radius: 50px; opacity: 0; transition: 0.2s; }
+        .editable-avatar:hover::after { opacity: 1; }
     </style>
 </head>
 <body>
@@ -72,35 +112,34 @@
 <div class="sidebar" id="sidebar-menu">
     <span class="sidebar-close" onclick="toggleMenu(false)">✕</span>
     <div class="menu-item" onclick="changeTab('game')">🎮 Trang Chủ Chơi</div>
-    <div class="menu-item" onclick="openMyProfile()">👤 Xem Tài Khoản</div>
+    <div class="menu-item" onclick="openMyProfile()">👤 Xem & Đổi Avatar</div>
     <div class="menu-item" style="background:#cc2e2e; margin-top:40px;" onclick="logOut()">🚪 Đăng Xuất</div>
 </div>
 
 <div class="auth-wrapper" id="box-login">
     <div class="auth-card">
-        <h2 style="color: var(--neon-gold); text-align:center; margin-top:0;">ĐĂNG NHẬP</h2>
-        <input type="text" id="login-user" placeholder="Tên tài khoản...">
+        <h2 style="color: var(--neon-gold); text-align:center; margin-top:0; letter-spacing: 1px;">ĐĂNG NHẬP SYSTEM</h2>
+        <input type="text" id="login-user" placeholder="Tên đăng nhập...">
         <div class="pass-group">
             <input type="password" id="login-pass" placeholder="Mật khẩu...">
             <span class="eye-btn" onclick="toggleEye('login-pass')">👁️</span>
         </div>
-        <button class="btn-action" onclick="submitLogin()">ĐĂNG NHẬP SYSTEM</button>
-        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('register')">Chưa có tài khoản? Đăng ký ngay</p>
+        <button class="btn-action" onclick="submitLogin()">ĐĂNG NHẬP CHƠI NGAY</button>
+        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-top: 15px; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('register')">Chưa có tài khoản? Đăng ký tại đây</p>
     </div>
 </div>
 
 <div class="auth-wrapper" id="box-register" style="display: none;">
     <div class="auth-card">
-        <h2 style="color: var(--neon-gold); text-align:center; margin-top:0;">ĐĂNG KÝ MỚI</h2>
-        <input type="text" id="reg-user" placeholder="Tên tài khoản game...">
+        <h2 style="color: var(--cyber-blue); text-align:center; margin-top:0; letter-spacing: 1px;">ĐĂNG KÝ HỆ THỐNG</h2>
+        <input type="text" id="reg-user" placeholder="Tên đăng nhập (viết không dấu, không cách)...">
+        <input type="text" id="reg-display" placeholder="Tên hiển thị phòng chat...">
         <div class="pass-group">
             <input type="password" id="reg-pass" placeholder="Mật khẩu bảo mật...">
             <span class="eye-btn" onclick="toggleEye('reg-pass')">👁️</span>
         </div>
-        <input type="text" id="reg-fbname" placeholder="Tên hiển thị Facebook của bạn...">
-        <input type="text" id="reg-fblink" placeholder="Dán Link cá nhân Facebook vào đây...">
-        <button class="btn-action" style="background: #00b894;" onclick="submitRegister()">HOÀN THÀNH ĐĂNG KÝ</button>
-        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('login')">Quay lại trang Đăng Nhập</p>
+        <button class="btn-action" style="background: linear-gradient(135deg, #00e676, #00b894); box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);" onclick="submitRegister()">HOÀN THÀNH ĐĂNG KÝ</button>
+        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-top: 15px; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('login')">Quay lại trang Đăng Nhập</p>
     </div>
 </div>
 
@@ -111,17 +150,17 @@
                 <img id="my-avt" class="mini-avatar" src="" alt="avatar">
                 <span id="my-name">User: ...</span>
             </div>
-            <span style="color: var(--neon-gold);">Ví: <span id="my-balance">0</span>đ</span>
+            <span style="color: var(--neon-gold); font-weight: bold;">Ví: <span id="my-balance">0</span>đ</span>
         </div>
 
-        <div id="game-status" style="color: #a0aec0; letter-spacing: 1px; font-size: 14px;">TRẠNG THÁI...</div>
+        <div id="game-status" style="color: #a0aec0; letter-spacing: 2px; font-size: 13px; font-weight: bold;">TRẠNG THÁI...</div>
         <div class="timer-view" id="game-timer">00</div>
 
-        <div style="font-size: 12px; color: #a0aec0;">KẾT QUẢ MỞ MẮT:</div>
+        <div style="font-size: 12px; color: #a0aec0; font-weight: bold;">KẾT QUẢ PHIÊN:</div>
         <div class="dice-box" id="dice-view">🎲 🎲 🎲</div>
-        <div id="total-view" style="font-size: 18px; font-weight: bold; color: var(--neon-gold); margin-bottom: 15px;">Tổng: 0 -> ...</div>
+        <div id="total-view" style="font-size: 19px; font-weight: bold; color: var(--neon-gold); margin-bottom: 15px;">Tổng: 0 -> ...</div>
 
-        <input type="number" id="bet-amount" style="text-align:center; font-weight:bold; font-size:16px; width:80%;" value="50000" step="10000">
+        <input type="number" id="bet-amount" style="text-align:center; font-weight:bold; font-size:18px; width:85%; border: 1px solid #232d42; color: var(--neon-gold);" value="50000" step="10000">
         
         <div class="bet-container">
             <div class="bet-btn b-tai" onclick="bet('Tài')">TÀI<span id="total-tai">0đ</span></div>
@@ -129,34 +168,46 @@
         </div>
 
         <div class="dot-row">
-            <div style="font-size:11px; color:#a0aec0; font-weight:bold; margin-bottom:5px;">XU HƯỚNG CẦU PHIÊN:</div>
+            <div style="font-size:11px; color:#a0aec0; font-weight:bold; margin-bottom:5px; letter-spacing: 0.5px;">XU HƯỚNG CẦU PHIÊN:</div>
             <div id="history-dots"></div>
         </div>
     </div>
 
     <div class="chat-wrapper">
-        <h4 style="margin: 0 0 10px 0; color: var(--neon-gold); border-bottom: 1px solid #232d42; padding-bottom: 5px;">💬 PHÒNG CHAT TRỰC TUYẾN</h4>
+        <h4 style="margin: 0 0 10px 0; color: var(--neon-gold); border-bottom: 1px solid #232d42; padding-bottom: 5px; letter-spacing: 0.5px;">💬 PHÒNG CHAT TRỰC TUYẾN</h4>
         <div id="chat-view"></div>
+        
         <div class="chat-input-bar">
-            <input type="text" id="chat-msg" placeholder="Nhập tin nhắn..." onkeypress="if(event.keyCode===13) sendChat()">
-            <button class="btn-action" style="width:70px; padding:0;" onclick="sendChat()">GỬI</button>
+            <input type="text" id="chat-msg" placeholder="Nhập tin nhắn hoặc 'diemdanh'..." onkeypress="if(event.keyCode===13) sendChat()" style="margin:0;">
+            <button class="btn-action" style="width:70px; padding:12px 0;" onclick="sendChat()">GỬI</button>
+        </div>
+
+        <div class="admin-footer">
+            <img class="admin-footer-avt" src="https://files.catbox.moe/nrfkuv.webp" alt="Chủ Web">
+            <div class="admin-footer-info">
+                <div class="admin-footer-name">👑 Thành Đạt <span style="color: var(--cyber-blue); font-size: 9px; border: 1px solid var(--cyber-blue); padding: 0 3px; border-radius: 3px;">FOUNDER</span></div>
+                <div>📅 Sinh ngày: 26/3/2006</div>
+                <div>🔗 Hỗ trợ: <a class="admin-footer-link" href="https://www.facebook.com/share/17iQc3gB4L/" target="_blank">Nhấp vào để liên hệ</a></div>
+            </div>
         </div>
 
         <div class="profile-overlay" id="user-profile-panel">
             <div class="back-chat-btn" onclick="closeProfile()">🡨 Quay lại cuộc trò chuyện</div>
-            <h3 style="color:var(--neon-gold); text-align:center; margin-top:10px;">THÔNG TIN NGƯỜI CHƠI</h3>
+            <h3 style="color:var(--neon-gold); text-align:center; margin-top:10px; letter-spacing: 0.5px;">THÔNG TIN NGƯỜI CHƠI</h3>
             <div style="text-align: center; margin: 15px 0;">
-                <img id="view-p-avt" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--neon-gold); object-fit:cover;" src="" alt="avatar">
+                <div class="editable-avatar" id="avatar-click-zone" onclick="triggerAvatarUpload()">
+                    <img id="view-p-avt" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--neon-gold); object-fit:cover;" src="" alt="avatar">
+                </div>
+                <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event)">
             </div>
             <div style="background:#171f30; padding:15px; border-radius:8px; font-size:14px; line-height:2.0;">
-                <div>🆔 Tài khoản: <span id="view-p-user" style="color:#fff; font-weight:bold;">...</span></div>
-                <div>👤 Tên Facebook: <span id="view-p-fbname" style="color:#fff;">...</span></div>
-                <div>🔗 Link FB: <a id="view-p-link" href="#" target="_blank" style="color:var(--neon-gold); text-decoration:none;">Bấm để xem</a></div>
-                <div id="pass-row-view" style="display:none;">🔑 Mật khẩu: 
+                <div>🆔 Tên đăng nhập: <span id="view-p-user" style="color:#fff; font-weight:bold;">...</span></div>
+                <div>👤 Tên hiển thị: <span id="view-p-display" style="color:#00f0ff; font-weight:bold;">...</span></div>
+                <div id="pass-row-view" style="display:none;">🔑 Mật khẩu bảo mật: 
                     <span id="view-p-pass">••••</span> 
                     <span id="view-p-eye" style="cursor:pointer; margin-left:8px;" onclick="toggleViewPassword()">👁️</span>
                 </div>
-                <div>💰 Khối tài sản: <span id="view-p-balance" style="color:#00e676; font-weight:bold;">0</span> đ</div>
+                <div>💰 Số dư khả dụng: <span id="view-p-balance" style="color:#00e676; font-weight:bold;">0</span> đ</div>
             </div>
         </div>
     </div>
@@ -170,14 +221,13 @@
     let myData = null;
     let bgMusic = document.getElementById('bg-music');
     let savedPasswordReal = "";
+    let isViewingMyself = false;
 
-    // 1. Điều khiển Ẩn/Hiện con mắt mật khẩu
     function toggleEye(id) {
         let input = document.getElementById(id);
         input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // 2. Chuyển đổi giao diện Đăng ký / Đăng nhập biệt lập
     function switchAuth(tab) {
         if(tab === 'register') {
             document.getElementById('box-login').style.display = 'none';
@@ -188,19 +238,22 @@
         }
     }
 
-    // 3. Xử lý Đăng ký và Đăng nhập
     function submitRegister() {
-        const username = document.getElementById('reg-user').value.trim();
+        let username = document.getElementById('reg-user').value.trim();
+        const display_name = document.getElementById('reg-display').value.trim();
         const password = document.getElementById('reg-pass').value.trim();
-        const fbName = document.getElementById('reg-fbname').value.trim();
-        const fbLink = document.getElementById('reg-fblink').value.trim();
 
-        if(!username || !password || !fbName || !fbLink) return alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+        // Chặn viết dấu và khoảng cách của tên đăng nhập bằng regex công thức toán logic
+        if(/[^a-zA-Z0-9]/.test(username)) {
+            return alert("Tên đăng nhập viết liền, không dấu, không có khoảng cách hay ký tự đặc biệt!");
+        }
+
+        if(!username || !display_name || !password) return alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
 
         fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, fbName, fbLink })
+            body: JSON.stringify({ username, display_name, password })
         })
         .then(res => res.json())
         .then(data => {
@@ -227,10 +280,9 @@
             myData = data.user;
             document.getElementById('box-login').style.display = 'none';
             document.getElementById('main-game-screen').style.display = 'grid';
-            document.getElementById('my-name').innerText = myData.fbName;
+            document.getElementById('my-name').innerText = `${myData.display_name} (${myData.username})`;
             document.getElementById('my-avt').src = myData.avatarUrl;
             
-            // Khởi động nhạc nền
             bgMusic.volume = 0.4;
             bgMusic.play().catch(() => console.log("Cần tương tác để phát nhạc"));
 
@@ -238,15 +290,12 @@
         });
     }
 
-    // 4. Quản lý Điều hướng Sidebar Menu
     function toggleMenu(show) {
-        document.getElementById('sidebar-menu').style.active = show;
         document.getElementById('sidebar-menu').className = show ? 'sidebar active' : 'sidebar';
     }
 
     function changeTab(tab) {
         toggleMenu(false);
-        // Trở về giao diện màn hình chính
         document.getElementById('user-profile-panel').className = 'profile-overlay';
     }
 
@@ -259,25 +308,44 @@
         window.location.reload();
     }
 
-    // 5. Hàm Tự Động Voice TTS Google (Giảm âm lượng nhạc nền khi nói)
     function voiceGoogleTTS(text) {
-        bgMusic.volume = 0.05; // Hạ nhỏ âm lượng nhạc xuống thấp nhất
-        
+        bgMusic.volume = 0.05; 
         let msg = new SpeechSynthesisUtterance();
         msg.text = text;
-        msg.lang = 'vi-VN'; // Ép buộc giọng tiếng Việt
+        msg.lang = 'vi-VN';
         msg.rate = 1.0;
-        
-        msg.onend = function() {
-            bgMusic.volume = 0.4; // Nói xong tự động tăng nhạc nền lại như cũ
-        };
-        
+        msg.onend = function() { bgMusic.volume = 0.4; };
         window.speechSynthesis.speak(msg);
     }
 
-    // 6. Xử lý Socket Realtime Sự Kiện Trò Chơi
+    // Tính năng upload và xử lý lưu ảnh Avatar cá nhân cục bộ hóa
+    function triggerAvatarUpload() {
+        if(!isViewingMyself) return; // Chỉ tài khoản chính mình mới được kích hoạt upload
+        document.getElementById('avatar-input').click();
+    }
+
+    function handleAvatarChange(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Image = e.target.result;
+            socket.emit('update-avatar', { base64: base64Image });
+        }
+        reader.readAsDataURL(file);
+    }
+
+    socket.on('avatar-updated-success', (newUrl) => {
+        document.getElementById('view-p-avt').src = newUrl;
+        document.getElementById('my-avt').src = newUrl;
+        myData.avatarUrl = newUrl;
+        alert("Cập nhật ảnh đại diện mới thành công!");
+    });
+
     socket.on('update-balance', (balance) => {
         document.getElementById('my-balance').innerText = balance.toLocaleString();
+        if(myData) myData.balance = balance;
     });
 
     socket.on('time-update', (state) => {
@@ -302,13 +370,14 @@
         document.getElementById('total-view').innerText = `Tổng: ${res.total} ➔ [${res.type}]`;
     });
 
+    // Fix âm thanh và voice ứng biến chuẩn chỉ realtime tức thì khi nhận kết quả phiên từ server phát về
     socket.on('bet-result', (data) => {
+        document.getElementById('my-balance').innerText = data.newBalance.toLocaleString();
         if(data.status === 'win') {
             voiceGoogleTTS(`Biến động số dư ngân hàng cá cược đã nhận thêm ${data.amount} đồng`);
         } else {
             voiceGoogleTTS(`Haha đồ ngu thua cược rồi`);
         }
-        document.getElementById('my-balance').innerText = data.newBalance.toLocaleString();
     });
 
     socket.on('notification', (msg) => alert(msg));
@@ -319,7 +388,6 @@
         socket.emit('place-bet', { type, amount });
     }
 
-    // 7. Đồng bộ luồng Chatbox hiển thị Avatar
     function sendChat() {
         const inp = document.getElementById('chat-msg');
         if(inp.value.trim() !== '') {
@@ -333,11 +401,13 @@
         if (data.system) {
             view.innerHTML += `<div class="sys-line">📢 ${data.message}</div>`;
         } else {
+            // Check lớp định dạng class tên Admin bảy màu hay người dùng thường
+            const nameClass = (data.name === 'admin') ? 'class="admin-rainbow"' : 'class="chat-name"';
             view.innerHTML += `
-                <div class="chat-line" onclick="showProfileDetail('${data.name}', false)">
+                <div class="chat-line" style="cursor:pointer;" onclick="showProfileDetail('${data.name}', ${data.name === myData.username})">
                     <img class="chat-avt" src="${data.avatarUrl}">
                     <div class="chat-body">
-                        <div class="chat-name">${data.fbName} (@${data.name})</div>
+                        <div ${nameClass}>${data.display_name} (@${data.name})</div>
                         <div>${data.message}</div>
                     </div>
                 </div>`;
@@ -345,14 +415,13 @@
         view.scrollTop = view.scrollHeight;
     });
 
-    // 8. Quản lý xem chi tiết Profile của người dùng
     function showProfileDetail(username, isMyself) {
+        isViewingMyself = isMyself;
         socket.emit('get-profile', username, (res) => {
             if(res.status === 'success') {
                 document.getElementById('view-p-avt').src = res.data.avatarUrl;
                 document.getElementById('view-p-user').innerText = res.data.username;
-                document.getElementById('view-p-fbname').innerText = res.data.fbName;
-                document.getElementById('view-p-link').href = res.data.fbLink;
+                document.getElementById('view-p-display').innerText = res.data.display_name;
                 document.getElementById('view-p-balance').innerText = res.data.balance.toLocaleString();
                 
                 let passRow = document.getElementById('pass-row-view');
@@ -360,8 +429,10 @@
                     passRow.style.display = 'block';
                     savedPasswordReal = res.data.password;
                     document.getElementById('view-p-pass').innerText = "••••";
+                    document.getElementById('avatar-click-zone').style.cursor = 'pointer';
                 } else {
                     passRow.style.display = 'none';
+                    document.getElementById('avatar-click-zone').style.cursor = 'default';
                 }
 
                 document.getElementById('user-profile-panel').className = 'profile-overlay open';
