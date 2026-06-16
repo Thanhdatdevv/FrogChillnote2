@@ -1,12 +1,13 @@
 {
-  "name": "simple-notepad-api",
+  "name": "taixiu-online-realtime",
   "version": "1.0.0",
-  "description": "Notepad API của FrogTeam",
+  "description": "Game Tai Xiu Realtime chay trên Render",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
   }
 }
