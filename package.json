@@ -1,7 +1,7 @@
 {
-  "name": "taixiu-online-realtime",
-  "version": "1.0.0",
-  "description": "Game Tai Xiu Realtime chay trên Render",
+  "name": "taixiu-cyberpunk-premium",
+  "version": "2.0.0",
+  "description": "Game Tai Xiu Premium Realtime - Responsive Mobile",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
