@@ -3,190 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sòng Bạc Tài Xỉu Han nghênh các con nghiện</title>
+    <title>Sòng Bạc Tài Xỉu Hoàng Gia</title>
     <style>
-        :root { --bg-main: #0a0d14; --bg-card: #141923; --gold: #ffd700; --tai-color: #ff4d4d; --xiu-color: #00db80; }
-        body { background: var(--bg-main); color: #e1e7f0; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .app-wrapper { width: 100%; max-width: 950px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        :root { --bg-dark: #07090e; --bg-card: #111622; --neon-gold: #ffb900; --red-glow: #ff3838; --green-glow: #00e676; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Giao diện Auth */
-        .auth-container { background: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid #222d3f; text-align: center; max-width: 400px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .auth-container input { width: 90%; background: #0a0d14; border: 1px solid #2a374e; padding: 12px; margin: 8px 0; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
-        .auth-btn { width: 96%; background: linear-gradient(135deg, #f39c12, #d35400); border: none; color: white; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        /* Menu Sidebar Gốc Trái Trên */
+        .menu-trigger { position: fixed; top: 15px; left: 15px; background: var(--bg-card); border: 1px solid #232d42; padding: 10px 15px; border-radius: 6px; cursor: pointer; color: var(--neon-gold); font-weight: bold; z-index: 99; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--bg-card); border-right: 1px solid #232d42; z-index: 100; transition: 0.3s; padding: 70px 20px 20px 20px; box-shadow: 5px 0 25px rgba(0,0,0,0.7); }
+        .sidebar.active { left: 0; }
+        .sidebar-close { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; color: #a0aec0; }
+        .menu-item { display: block; padding: 12px; background: #171f30; border-radius: 6px; margin-bottom: 12px; text-decoration: none; color: #fff; font-weight: bold; text-align: center; cursor: pointer; border: 1px solid transparent; }
+        .menu-item:hover { border-color: var(--neon-gold); }
         
-        /* Khu vực Game */
-        .main-board { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #222d3f; text-align: center; position: relative; }
-        .user-panel { display: flex; justify-content: space-between; background: #1c2331; padding: 12px 20px; border-radius: 8px; font-weight: bold; border-left: 4px solid var(--gold); margin-bottom: 15px; }
-        .status-txt { color: #8a99ad; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
-        .countdown { font-size: 55px; font-weight: 900; color: var(--gold); margin: 10px 0; text-shadow: 0 0 15px rgba(255,215,0,0.4); }
+        /* Auth layout biệt lập */
+        .auth-wrapper { max-width: 400px; margin: 60px auto padding 20px; width: 90%; }
+        .auth-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid #232d42; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .pass-group { position: relative; width: 100%; }
+        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; user-select: none; }
+        input { width: 100%; background: #07090e; border: 1px solid #232d42; padding: 12px; margin: 8px 0; border-radius: 6px; color: #fff; outline: none; font-size: 14px; }
+        .btn-action { width: 100%; background: linear-gradient(135deg, #ff9f43, #ff6b6b); border: none; color: white; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 15px; }
+
+        /* Game Main Layout */
+        .game-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; max-width: 1000px; margin: 70px auto 20px auto; padding: 0 15px; }
+        @media (max-width: 768px) { .game-grid { grid-template-columns: 1fr; } }
         
-        /* Bát Xúc Xắc */
-        .plate-zone { background: #0a0d14; padding: 15px 30px; border-radius: 50px; display: inline-block; border: 2px solid #222d3f; font-size: 42px; margin: 15px 0; }
-        .result-title { font-size: 22px; font-weight: bold; color: var(--gold); margin-bottom: 25px; }
+        .board-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #232d42; text-align: center; }
+        .profile-bar { display: flex; align-items: center; justify-content: space-between; background: #171f30; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--neon-gold); }
+        .user-meta { display: flex; align-items: center; gap: 8px; }
+        .mini-avatar { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--neon-gold); object-fit: cover; }
         
-        /* Khu vực nút cược */
-        .bet-row { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
-        .bet-box { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 24px; color: #fff; border: 1px solid transparent; }
-        .box-tai { background: linear-gradient(145deg, #cc2e2e, #851c1c); box-shadow: 0 5px 15px rgba(204,46,46,0.3); }
-        .box-xiu { background: linear-gradient(145deg, #00b368, #00663c); box-shadow: 0 5px 15px rgba(0,179,104,0.3); }
-        .bet-box:active { transform: scale(0.97); }
-        .bet-box span { display: block; font-size: 13px; font-weight: normal; margin-top: 5px; opacity: 0.8; }
+        .timer-view { font-size: 50px; font-weight: 900; color: var(--neon-gold); margin: 5px 0; text-shadow: 0 0 15px rgba(255,185,0,0.3); }
+        .dice-box { background: #07090e; padding: 10px 25px; border-radius: 50px; display: inline-block; font-size: 40px; margin: 10px 0; border: 1px dashed var(--neon-gold); }
         
-        .input-money { background: #0a0d14; border: 1px solid #2a374e; color: #fff; padding: 12px; border-radius: 6px; width: 60%; font-size: 16px; text-align: center; font-weight: bold; margin: 10px 0; }
-        
-        /* Thống kê lịch sử */
-        .history-box { margin-top: 20px; background: #0a0d14; padding: 12px; border-radius: 8px; text-align: left; }
-        .circle { display: inline-block; width: 26px; height: 26px; border-radius: 50%; text-align: center; line-height: 26px; font-size: 13px; font-weight: bold; margin-right: 6px; margin-top: 5px; color: #fff; }
-        .c-tai { background: var(--tai-color); }
-        .c-xiu { background: var(--xiu-color); }
-        
-        /* Chatbox */
-        .chat-container { background: var(--bg-card); border: 1px solid #222d3f; border-radius: 12px; display: flex; flex-direction: column; height: 550px; padding: 15px; box-sizing: border-box; }
-        #chat-logs { flex: 1; overflow-y: auto; background: #0a0d14; padding: 10px; border-radius: 6px; font-size: 13.5px; margin-bottom: 10px; }
-        .chat-input-bar { display: flex; gap: 6px; }
-        .chat-input-bar input { flex: 1; background: #0a0d14; border: 1px solid #2a374e; padding: 10px; border-radius: 4px; color: #fff; outline: none; }
-        .chat-input-bar button { background: #3867d6; border: none; color: white; padding: 0 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* Cược */
+        .bet-container { display: flex; gap: 12px; margin-top: 15px; }
+        .bet-btn { flex: 1; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 22px; color: white; cursor: pointer; text-align: center; }
+        .b-tai { background: linear-gradient(135deg, #d63031, #811112); box-shadow: 0 4px 15px rgba(214,48,49,0.3); }
+        .b-xiu { background: linear-gradient(135deg, #00b894, #00624f); box-shadow: 0 4px 15px rgba(0,184,148,0.3); }
+        .bet-btn span { display: block; font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9; }
+
+        /* Lịch sử tròn */
+        .dot-row { margin-top: 15px; background: #07090e; padding: 10px; border-radius: 8px; text-align: left; overflow-x: auto; white-space: nowrap; }
+        .h-dot { display: inline-block; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 11px; font-weight: bold; margin-right: 5px; color: white; }
+        .dt-tai { background: var(--red-glow); }
+        .dt-xiu { background: var(--green-glow); }
+
+        /* Chatbox Box */
+        .chat-wrapper { background: var(--bg-card); border: 1px solid #232d42; border-radius: 12px; display: flex; flex-direction: column; height: 520px; padding: 12px; position: relative; overflow: hidden; }
+        #chat-view { flex: 1; overflow-y: auto; background: #07090e; padding: 10px; border-radius: 6px; margin-bottom: 8px; }
+        .chat-line { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; cursor: pointer; }
+        .chat-avt { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #4a5568; }
+        .chat-body { background: #171f30; padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 13px; }
+        .chat-name { font-weight: bold; color: var(--neon-gold); font-size: 12px; margin-bottom: 2px; }
+        .sys-line { background: rgba(255, 185, 0, 0.1); border-left: 3px solid var(--neon-gold); padding: 6px 10px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-radius: 0 4px 4px 0; }
+
+        /* Profile View Panel bên trong Chatbox */
+        .profile-overlay { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: var(--bg-card); transition: 0.3s; z-index: 10; padding: 15px; display: flex; flex-direction: column; }
+        .profile-overlay.open { left: 0; }
+        .back-chat-btn { cursor: pointer; font-weight: bold; color: var(--neon-gold); display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div id="auth-screen" class="auth-container">
-    <h2 style="color: var(--gold); margin-top: 0;">CASINO TÀI XỈU</h2>
-    <p style="color: #8a99ad; font-size: 13px;">Đăng ký tài khoản nhận ngay 500,000đ trải nghiệm</p>
-    <input type="text" id="auth-user" placeholder="Tên tài khoản...">
-    <input type="password" id="auth-pass" placeholder="Mật khẩu...">
-    <button class="auth-btn" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
-    <button class="auth-btn" style="background:#2a374e; margin-top:8px;" onclick="handleAuth('register')">ĐĂNG KÝ TÀI KHOẢN</button>
+<div class="menu-trigger" onclick="toggleMenu(true)">☰ MENU</div>
+
+<div class="sidebar" id="sidebar-menu">
+    <span class="sidebar-close" onclick="toggleMenu(false)">✕</span>
+    <div class="menu-item" onclick="changeTab('game')">🎮 Trang Chủ Chơi</div>
+    <div class="menu-item" onclick="openMyProfile()">👤 Xem Tài Khoản</div>
+    <div class="menu-item" style="background:#cc2e2e; margin-top:40px;" onclick="logOut()">🚪 Đăng Xuất</div>
 </div>
 
-<div id="game-screen" class="app-wrapper" style="display: none;">
-    <div class="main-board">
-        <div class="user-panel">
-            <span id="lb-user">User: ...</span>
-            <span style="color: var(--gold);">Số dư: <span id="lb-balance">0</span> đ</span>
+<div class="auth-wrapper" id="box-login">
+    <div class="auth-card">
+        <h2 style="color: var(--neon-gold); text-align:center; margin-top:0;">ĐĂNG NHẬP</h2>
+        <input type="text" id="login-user" placeholder="Tên tài khoản...">
+        <div class="pass-group">
+            <input type="password" id="login-pass" placeholder="Mật khẩu...">
+            <span class="eye-btn" onclick="toggleEye('login-pass')">👁️</span>
+        </div>
+        <button class="btn-action" onclick="submitLogin()">ĐĂNG NHẬP SYSTEM</button>
+        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('register')">Chưa có tài khoản? Đăng ký ngay</p>
+    </div>
+</div>
+
+<div class="auth-wrapper" id="box-register" style="display: none;">
+    <div class="auth-card">
+        <h2 style="color: var(--neon-gold); text-align:center; margin-top:0;">ĐĂNG KÝ MỚI</h2>
+        <input type="text" id="reg-user" placeholder="Tên tài khoản game...">
+        <div class="pass-group">
+            <input type="password" id="reg-pass" placeholder="Mật khẩu bảo mật...">
+            <span class="eye-btn" onclick="toggleEye('reg-pass')">👁️</span>
+        </div>
+        <input type="text" id="reg-fbname" placeholder="Tên hiển thị Facebook của bạn...">
+        <input type="text" id="reg-fblink" placeholder="Dán Link cá nhân Facebook vào đây...">
+        <button class="btn-action" style="background: #00b894;" onclick="submitRegister()">HOÀN THÀNH ĐĂNG KÝ</button>
+        <p style="text-align: center; font-size: 13px; color: #a0aec0; margin-bottom: 0; cursor: pointer;" onclick="switchAuth('login')">Quay lại trang Đăng Nhập</p>
+    </div>
+</div>
+
+<div class="game-grid" id="main-game-screen" style="display: none;">
+    <div class="board-card">
+        <div class="profile-bar">
+            <div class="user-meta">
+                <img id="my-avt" class="mini-avatar" src="" alt="avatar">
+                <span id="my-name">User: ...</span>
+            </div>
+            <span style="color: var(--neon-gold);">Ví: <span id="my-balance">0</span>đ</span>
         </div>
 
-        <div id="game-status" class="status-txt">ĐANG ĐỢI PHIÊN...</div>
-        <div class="countdown" id="game-timer">00</div>
+        <div id="game-status" style="color: #a0aec0; letter-spacing: 1px; font-size: 14px;">TRẠNG THÁI...</div>
+        <div class="timer-view" id="game-timer">00</div>
 
-        <div style="font-size: 13px; color: #8a99ad;">KẾT QUẢ XÚC XẮC:</div>
-        <div class="plate-zone" id="dice-view">🎲 🎲 🎲</div>
-        <div class="result-title" id="total-view">Tổng: 0 ➔ ...</div>
+        <div style="font-size: 12px; color: #a0aec0;">KẾT QUẢ MỞ MẮT:</div>
+        <div class="dice-box" id="dice-view">🎲 🎲 🎲</div>
+        <div id="total-view" style="font-size: 18px; font-weight: bold; color: var(--neon-gold); margin-bottom: 15px;">Tổng: 0 -> ...</div>
 
-        <input type="number" id="bet-val" class="input-money" value="50000" step="10000">
+        <input type="number" id="bet-amount" style="text-align:center; font-weight:bold; font-size:16px; width:80%;" value="50000" step="10000">
         
-        <div class="bet-row">
-            <div class="bet-box box-tai" onclick="sendBet('Tài')">TÀI<span>Tổng cược: <span id="sum-tai">0đ</span></span></div>
-            <div class="bet-box box-xiu" onclick="sendBet('Xỉu')">XỈU<span>Tổng cược: <span id="sum-xiu">0đ</span></span></div>
+        <div class="bet-container">
+            <div class="bet-btn b-tai" onclick="bet('Tài')">TÀI<span id="total-tai">0đ</span></div>
+            <div class="bet-btn b-xiu" onclick="bet('Xỉu')">XỈU<span id="total-xiu">0đ</span></div>
         </div>
 
-        <div class="history-box">
-            <div style="font-size: 13px; color: #8a99ad; font-weight: bold;">LỊCH SỬ PHIÊN GẦN ĐÂY:</div>
-            <div id="history-list"></div>
+        <div class="dot-row">
+            <div style="font-size:11px; color:#a0aec0; font-weight:bold; margin-bottom:5px;">XU HƯỚNG CẦU PHIÊN:</div>
+            <div id="history-dots"></div>
         </div>
     </div>
 
-    <div class="chat-container">
-        <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #222d3f; padding-bottom: 8px; color: var(--gold);">💬 CHAT TRỰC TUYẾN</h4>
-        <div id="chat-logs"></div>
+    <div class="chat-wrapper">
+        <h4 style="margin: 0 0 10px 0; color: var(--neon-gold); border-bottom: 1px solid #232d42; padding-bottom: 5px;">💬 PHÒNG CHAT TRỰC TUYẾN</h4>
+        <div id="chat-view"></div>
         <div class="chat-input-bar">
-            <input type="text" id="chat-txt" placeholder="Nhập tin nhắn..." onkeypress="if(event.keyCode===13) pressChat()">
-            <button onclick="pressChat()">GỬI</button>
+            <input type="text" id="chat-msg" placeholder="Nhập tin nhắn..." onkeypress="if(event.keyCode===13) sendChat()">
+            <button class="btn-action" style="width:70px; padding:0;" onclick="sendChat()">GỬI</button>
+        </div>
+
+        <div class="profile-overlay" id="user-profile-panel">
+            <div class="back-chat-btn" onclick="closeProfile()">🡨 Quay lại cuộc trò chuyện</div>
+            <h3 style="color:var(--neon-gold); text-align:center; margin-top:10px;">THÔNG TIN NGƯỜI CHƠI</h3>
+            <div style="text-align: center; margin: 15px 0;">
+                <img id="view-p-avt" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--neon-gold); object-fit:cover;" src="" alt="avatar">
+            </div>
+            <div style="background:#171f30; padding:15px; border-radius:8px; font-size:14px; line-height:2.0;">
+                <div>🆔 Tài khoản: <span id="view-p-user" style="color:#fff; font-weight:bold;">...</span></div>
+                <div>👤 Tên Facebook: <span id="view-p-fbname" style="color:#fff;">...</span></div>
+                <div>🔗 Link FB: <a id="view-p-link" href="#" target="_blank" style="color:var(--neon-gold); text-decoration:none;">Bấm để xem</a></div>
+                <div id="pass-row-view" style="display:none;">🔑 Mật khẩu: 
+                    <span id="view-p-pass">••••</span> 
+                    <span id="view-p-eye" style="cursor:pointer; margin-left:8px;" onclick="toggleViewPassword()">👁️</span>
+                </div>
+                <div>💰 Khối tài sản: <span id="view-p-balance" style="color:#00e676; font-weight:bold;">0</span> đ</div>
+            </div>
         </div>
     </div>
 </div>
+
+<audio id="bg-music" src="https://files.catbox.moe/87j0ya.mp3" loop></audio>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    let clientUsername = "";
+    let myData = null;
+    let bgMusic = document.getElementById('bg-music');
+    let savedPasswordReal = "";
 
-    // Xử lý Đăng ký / Đăng nhập qua API
-    function handleAuth(type) {
-        const username = document.getElementById('auth-user').value.trim();
-        const password = document.getElementById('auth-pass').value.trim();
-        if(!username || !password) return alert("Vui lòng nhập đầy đủ thông tin!");
+    // 1. Điều khiển Ẩn/Hiện con mắt mật khẩu
+    function toggleEye(id) {
+        let input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
 
-        fetch(`/api/${type}`, {
+    // 2. Chuyển đổi giao diện Đăng ký / Đăng nhập biệt lập
+    function switchAuth(tab) {
+        if(tab === 'register') {
+            document.getElementById('box-login').style.display = 'none';
+            document.getElementById('box-register').style.display = 'block';
+        } else {
+            document.getElementById('box-register').style.display = 'none';
+            document.getElementById('box-login').style.display = 'block';
+        }
+    }
+
+    // 3. Xử lý Đăng ký và Đăng nhập
+    function submitRegister() {
+        const username = document.getElementById('reg-user').value.trim();
+        const password = document.getElementById('reg-pass').value.trim();
+        const fbName = document.getElementById('reg-fbname').value.trim();
+        const fbLink = document.getElementById('reg-fblink').value.trim();
+
+        if(!username || !password || !fbName || !fbLink) return alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+
+        fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, fbName, fbLink })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.msg);
+            if(data.status === 'success') switchAuth('login');
+        });
+    }
+
+    function submitLogin() {
+        const username = document.getElementById('login-user').value.trim();
+        const password = document.getElementById('login-pass').value.trim();
+
+        if(!username || !password) return alert("Vui lòng nhập tài khoản & mật khẩu!");
+
+        fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         })
         .then(res => res.json())
         .then(data => {
-            alert(data.msg || (data.status === 'success' ? 'Đăng nhập thành công!' : ''));
-            if(data.status === 'success' && type === 'login') {
-                clientUsername = data.user.username;
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'grid';
-                document.getElementById('lb-user').innerText = `User: ${data.user.username}`;
-                
-                // Kích hoạt socket định danh
-                socket.emit('join-game', clientUsername);
-            }
+            if(data.status === 'error') return alert(data.msg);
+            
+            myData = data.user;
+            document.getElementById('box-login').style.display = 'none';
+            document.getElementById('main-game-screen').style.display = 'grid';
+            document.getElementById('my-name').innerText = myData.fbName;
+            document.getElementById('my-avt').src = myData.avatarUrl;
+            
+            // Khởi động nhạc nền
+            bgMusic.volume = 0.4;
+            bgMusic.play().catch(() => console.log("Cần tương tác để phát nhạc"));
+
+            socket.emit('join-game', myData.username);
         });
     }
 
-    // Nhận cập nhật số dư ví
+    // 4. Quản lý Điều hướng Sidebar Menu
+    function toggleMenu(show) {
+        document.getElementById('sidebar-menu').style.active = show;
+        document.getElementById('sidebar-menu').className = show ? 'sidebar active' : 'sidebar';
+    }
+
+    function changeTab(tab) {
+        toggleMenu(false);
+        // Trở về giao diện màn hình chính
+        document.getElementById('user-profile-panel').className = 'profile-overlay';
+    }
+
+    function openMyProfile() {
+        toggleMenu(false);
+        showProfileDetail(myData.username, true);
+    }
+
+    function logOut() {
+        window.location.reload();
+    }
+
+    // 5. Hàm Tự Động Voice TTS Google (Giảm âm lượng nhạc nền khi nói)
+    function voiceGoogleTTS(text) {
+        bgMusic.volume = 0.05; // Hạ nhỏ âm lượng nhạc xuống thấp nhất
+        
+        let msg = new SpeechSynthesisUtterance();
+        msg.text = text;
+        msg.lang = 'vi-VN'; // Ép buộc giọng tiếng Việt
+        msg.rate = 1.0;
+        
+        msg.onend = function() {
+            bgMusic.volume = 0.4; // Nói xong tự động tăng nhạc nền lại như cũ
+        };
+        
+        window.speechSynthesis.speak(msg);
+    }
+
+    // 6. Xử lý Socket Realtime Sự Kiện Trò Chơi
     socket.on('update-balance', (balance) => {
-        document.getElementById('lb-balance').innerText = balance.toLocaleString();
+        document.getElementById('my-balance').innerText = balance.toLocaleString();
     });
 
-    // Cập nhật bộ đếm thời gian và lịch sử phiên theo giây
     socket.on('time-update', (state) => {
         document.getElementById('game-timer').innerText = state.timeRemaining;
-        document.getElementById('game-status').innerText = state.status;
-        document.getElementById('sum-tai').innerText = state.totalTai.toLocaleString() + 'đ';
-        document.getElementById('sum-xiu').innerText = state.totalXiu.toLocaleString() + 'đ';
+        document.getElementById('game-status').innerText = state.status.toUpperCase();
+        document.getElementById('total-tai').innerText = state.totalTai.toLocaleString() + 'đ';
+        document.getElementById('total-xiu').innerText = state.totalXiu.toLocaleString() + 'đ';
 
-        // Khởi tạo đồ thị lịch sử chuỗi phiên tròn
-        const histList = document.getElementById('history-list');
-        histList.innerHTML = '';
+        const dotsBox = document.getElementById('history-dots');
+        dotsBox.innerHTML = '';
         state.history.forEach(h => {
-            const span = document.createElement('span');
-            span.className = `circle ${h.type === 'Tài' ? 'c-tai' : 'c-xiu'}`;
-            span.innerText = h.type === 'Tài' ? 'T' : 'X';
-            span.title = `Tổng nút: ${h.total}`;
-            histList.appendChild(span);
+            const div = document.createElement('div');
+            div.className = `h-dot ${h.type === 'Tài' ? 'dt-tai' : 'dt-xiu'}`;
+            div.innerText = h.type === 'Tài' ? 'T' : 'X';
+            dotsBox.appendChild(div);
         });
     });
 
-    // Nhận kết quả mở thưởng xúc xắc công khai
     socket.on('game-result', (res) => {
-        const diceMap = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        document.getElementById('dice-view').innerText = `${diceMap[res.dice[0]-1]} ${diceMap[res.dice[1]-1]} ${diceMap[res.dice[2]-1]}`;
+        const dEmoji = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        document.getElementById('dice-view').innerText = `${dEmoji[res.dice[0]-1]} ${dEmoji[res.dice[1]-1]} ${dEmoji[res.dice[2]-1]}`;
         document.getElementById('total-view').innerText = `Tổng: ${res.total} ➔ [${res.type}]`;
     });
 
-    // Thông báo kết quả Thắng/Thua riêng của cá nhân
     socket.on('bet-result', (data) => {
-        alert(data.msg);
-        document.getElementById('lb-balance').innerText = data.newBalance.toLocaleString();
+        if(data.status === 'win') {
+            voiceGoogleTTS(`Biến động số dư ngân hàng cá cược đã nhận thêm ${data.amount} đồng`);
+        } else {
+            voiceGoogleTTS(`Haha đồ ngu thua cược rồi`);
+        }
+        document.getElementById('my-balance').innerText = data.newBalance.toLocaleString();
     });
 
     socket.on('notification', (msg) => alert(msg));
 
-    // Thực hiện đặt cược
-    function sendBet(type) {
-        const amount = parseInt(document.getElementById('bet-val').value);
-        if(!amount || amount <= 0) return alert('Số tiền cược không đúng!');
+    function bet(type) {
+        const amount = parseInt(document.getElementById('bet-amount').value);
+        if(!amount || amount <= 0) return alert('Số tiền đặt cược không hợp lệ!');
         socket.emit('place-bet', { type, amount });
     }
 
-    // Xử lý gửi tin nhắn Chatbox
-    function pressChat() {
-        const txt = document.getElementById('chat-txt');
-        if(txt.value.trim() !== '') {
-            socket.emit('send-chat', txt.value);
-            txt.value = '';
+    // 7. Đồng bộ luồng Chatbox hiển thị Avatar
+    function sendChat() {
+        const inp = document.getElementById('chat-msg');
+        if(inp.value.trim() !== '') {
+            socket.emit('send-chat', inp.value);
+            inp.value = '';
         }
     }
 
     socket.on('receive-chat', (data) => {
-        const logs = document.getElementById('chat-logs');
-        logs.innerHTML += `<div><span style="color:#f39c12; font-weight:bold;">${data.name}:</span> ${data.message}</div>`;
-        logs.scrollTop = logs.scrollHeight;
+        const view = document.getElementById('chat-view');
+        if (data.system) {
+            view.innerHTML += `<div class="sys-line">📢 ${data.message}</div>`;
+        } else {
+            view.innerHTML += `
+                <div class="chat-line" onclick="showProfileDetail('${data.name}', false)">
+                    <img class="chat-avt" src="${data.avatarUrl}">
+                    <div class="chat-body">
+                        <div class="chat-name">${data.fbName} (@${data.name})</div>
+                        <div>${data.message}</div>
+                    </div>
+                </div>`;
+        }
+        view.scrollTop = view.scrollHeight;
     });
+
+    // 8. Quản lý xem chi tiết Profile của người dùng
+    function showProfileDetail(username, isMyself) {
+        socket.emit('get-profile', username, (res) => {
+            if(res.status === 'success') {
+                document.getElementById('view-p-avt').src = res.data.avatarUrl;
+                document.getElementById('view-p-user').innerText = res.data.username;
+                document.getElementById('view-p-fbname').innerText = res.data.fbName;
+                document.getElementById('view-p-link').href = res.data.fbLink;
+                document.getElementById('view-p-balance').innerText = res.data.balance.toLocaleString();
+                
+                let passRow = document.getElementById('pass-row-view');
+                if (isMyself) {
+                    passRow.style.display = 'block';
+                    savedPasswordReal = res.data.password;
+                    document.getElementById('view-p-pass').innerText = "••••";
+                } else {
+                    passRow.style.display = 'none';
+                }
+
+                document.getElementById('user-profile-panel').className = 'profile-overlay open';
+            }
+        });
+    }
+
+    function toggleViewPassword() {
+        let el = document.getElementById('view-p-pass');
+        el.innerText = el.innerText === '••••' ? savedPasswordReal : '••••';
+    }
+
+    function closeProfile() {
+        document.getElementById('user-profile-panel').className = 'profile-overlay';
+    }
 </script>
 </body>
 </html>
