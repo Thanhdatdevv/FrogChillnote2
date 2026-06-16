@@ -1,102 +1,107 @@
 const express = require('express');
 const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const path = require('path');
+
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Lưu trữ danh sách nhiều lệnh khác nhau
-let notes = {};
+// Trạng thái game
+let gameState = {
+    timeRemaining: 30,
+    status: 'Bắt đầu cược', // 'Bắt đầu cược' hoặc 'Đang mở mắt'
+    lastResult: { dice: [1, 2, 3], total: 6, type: 'Xỉu' },
+    history: [], // Lưu 10 phiên gần nhất
+    totalTai: 0,
+    totalXiu: 0
+};
 
-// 1. Giao diện chỉnh sửa cho từng lệnh cụ thể
-app.get('/note/:id', (req, res) => {
-    const noteId = req.params.id;
-    const content = notes[noteId] || `// Hãy dán mã nguồn của lệnh [${noteId}] vào đây...`;
+// Quản lý số dư người chơi (Lưu tạm vào RAM)
+let players = {};
 
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Sửa Lệnh: ${noteId}</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body { margin: 0; background: #0d1117; color: #c9d1d9; font-family: sans-serif; padding: 15px; }
-                .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-                .title { font-weight: bold; font-size: 18px; color: #58a6ff; }
-                .status { font-size: 12px; color: #8b949e; background: #21262d; padding: 4px 8px; border-radius: 12px; margin-left: 10px; }
-                .btn-group { display: flex; gap: 8px; }
-                .btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 14px; cursor: pointer; }
-                .btn-blue { background: #238636; border: none; }
-                textarea { width: 100%; height: calc(100vh - 100px); background: #161b22; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: 12px; box-sizing: border-box; font-family: monospace; font-size: 14px; resize: none; outline: none; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <div>
-                    <span class="title">Lệnh: ${noteId}</span>
-                    <span id="status" class="status">Ready</span>
-                </div>
-                <div class="btn-group">
-                    <a href="/raw/${noteId}" class="btn" target="_blank">Raw</a>
-                    <button class="btn btn-blue" onclick="copyText()">Copy Code</button>
-                </div>
-            </div>
-            <textarea id="editor" placeholder="// Viết code ở đây...">${content}</textarea>
+// Đếm thời gian Game vòng lặp vô hạn
+setInterval(() => {
+    if (gameState.timeRemaining > 0) {
+        gameState.timeRemaining--;
+    } else {
+        if (gameState.status === 'Bắt đầu cược') {
+            // Hết giờ cược -> Tiến hành lắc xúc xắc
+            const d1 = Math.floor(Math.random() * 6) + 1;
+            const d2 = Math.floor(Math.random() * 6) + 1;
+            const d3 = Math.floor(Math.random() * 6) + 1;
+            const total = d1 + d2 + d3;
+            const type = total >= 11 ? 'Tài' : 'Xỉu';
 
-            <script>
-                const editor = document.getElementById('editor');
-                const status = document.getElementById('status');
-                let timeout = null;
+            gameState.lastResult = { dice: [d1, d2, d3], total, type };
+            gameState.history.push({ type, total });
+            if (gameState.history.length > 10) gameState.history.shift();
 
-                editor.addEventListener('input', () => {
-                    status.innerText = 'Typing...';
-                    clearTimeout(timeout);
+            gameState.status = 'Đang mở mắt';
+            gameState.timeRemaining = 10; // Đợi 10 giây xem kết quả rồi qua ván mới
 
-                    timeout = setTimeout(() => {
-                        status.innerText = 'Saving...';
-                        fetch('/api/note/${noteId}', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ content: editor.value })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.status === 'success') {
-                                status.innerText = 'Ready';
-                            } else {
-                                status.innerText = 'Error';
-                            }
-                        })
-                        .catch(() => status.innerText = 'Connection Error');
-                    }, 1000); // Tự động lưu sau 1 giây
-                });
+            // Xử lý trả thưởng cho các socket đang cược
+            io.emit('game-result', gameState.lastResult);
+            
+            // Reset tiền cược phiên mới
+            gameState.totalTai = 0;
+            gameState.totalXiu = 0;
+        } else {
+            // Hết thời gian chờ -> Sang phiên cược mới
+            gameState.status = 'Bắt đầu cược';
+            gameState.timeRemaining = 30;
+        }
+    }
+    io.emit('time-update', gameState);
+}, 1000);
 
-                function copyText() {
-                    editor.select();
-                    document.execCommand('copy');
-                    alert('Đã copy toàn bộ code lệnh!');
-                }
-            </script>
-        </body>
-        </html>
-    `);
+io.on('connection', (socket) => {
+    // Khởi tạo user mới khi kết nối
+    players[socket.id] = {
+        name: 'Khách_' + socket.id.substring(0, 4),
+        balance: 50000 // Tặng sẵn 50k trải nghiệm
+    };
+
+    // Gửi thông tin ban đầu cho người chơi mới vào
+    socket.emit('init-player', players[socket.id]);
+    socket.emit('time-update', gameState);
+
+    // Xử lý đặt cược
+    socket.on('place-bet', (data) => {
+        const { type, amount } = data;
+        const player = players[socket.id];
+
+        if (gameState.status !== 'Bắt đầu cược') {
+            return socket.emit('notification', 'Hết thời gian đặt cược phiên này!');
+        }
+        if (player.balance < amount || amount <= 0) {
+            return socket.emit('notification', 'Số dư không đủ hoặc tiền cược không hợp lệ!');
+        }
+
+        player.balance -= amount;
+        if (type === 'Tài') gameState.totalTai += amount;
+        if (type === 'Xỉu') gameState.totalXiu += amount;
+
+        // Giả lập trả thưởng ngay nếu đoán đúng khi có kết quả
+        // (Trong thực tế cần lưu thông tin cược của phiên để xử lý)
+        
+        socket.emit('update-balance', player.balance);
+        io.emit('time-update', gameState); // Cập nhật tổng tiền cược hiển thị lên màn hình
+        socket.emit('notification', `Đặt cược thành công ${amount.toLocaleString()}đ vào cửa ${type}`);
+    });
+
+    // Xử lý Chatbox
+    socket.on('send-chat', (msg) => {
+        const player = players[socket.id];
+        io.emit('receive-chat', { name: player.name, message: msg });
+    });
+
+    socket.on('disconnect', () => {
+        delete players[socket.id];
+    });
 });
 
-// 2. API lấy code thô (Raw)
-app.get('/raw/:id', (req, res) => {
-    const noteId = req.params.id;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.send(notes[noteId] || "");
-});
-
-// 3. API POST lưu code
-app.post('/api/note/:id', (req, res) => {
-    const noteId = req.params.id;
-    const { content } = req.body;
-    notes[noteId] = content || "";
-    res.json({ status: "success" });
-});
-
-app.listen(PORT, () => {
-    console.log(`Server đang chạy tại port ${PORT}`);
+http.listen(PORT, () => {
+    console.log(`Server Tài Xỉu đang chạy tại port ${PORT}`);
 });
