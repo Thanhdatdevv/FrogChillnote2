@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mèo Con Chạy Trốn</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="orientation-warning">
+        <div class="warning-box">
+            <p>🐱 Vui lòng xoay ngang điện thoại để chơi cùng người yêu nhé! 🥰</p>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="ui-screen">
+        <div class="box">
+            <h2>🐾 MÈO RUNNER 🐾</h2>
+            <input type="text" id="username" placeholder="Nhập tên của bạn..." maxlength="10">
+            <button onclick="login()">Vào Sảnh Chờ</button>
+        </div>
+    </div>
+
+    <div id="lobby-screen" class="ui-screen" style="display:none;">
+        <div class="box">
+            <h3 id="welcome-text">Chào bạn!</h3>
+            <button onclick="createRoom()">Tạo Phòng Mới</button>
+            <hr>
+            <input type="text" id="room-id-input" placeholder="Nhập mã ID phòng...">
+            <button onclick="joinRoom()">Vào Phòng</button>
+        </div>
+    </div>
+
+    <div id="room-screen" class="ui-screen" style="display:none;">
+        <div class="box">
+            <h3>PHÒNG: <span id="display-room-id" style="color:#ff69b4;">----</span></h3>
+            <div class="slots">
+                <div class="slot">🐾 SLOT 1 (Sát Thủ): <span id="slot1-name">Trống</span></div>
+                <div class="slot">🛡️ SLOT 2 (Hỗ Trợ): <span id="slot2-name">Trống</span></div>
+            </div>
+            <button id="start-btn" style="display:none;" onclick="startGame()">BẮT ĐẦU CHƠI</button>
+            <p id="wait-msg">Đang đợi người yêu vào phòng...</p>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" width="850" height="400" style="display:none;"></canvas>
+
+    <script src="game.js"></script>
+</body>
+</html>
