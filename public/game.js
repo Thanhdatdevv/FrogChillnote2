@@ -11,20 +11,20 @@ let gameState = 'lobby';
 // --- TẢI TÀI NGUYÊN HÌNH ẢNH ---
 const imgIdle = new Image(); imgIdle.src = 'assets/cat_idle.png';
 const imgRun = new Image(); imgRun.src = 'assets/cat1.png';
-const imgLine = new Image(); imgLine.src = 'assets/day.png'; // Dây nối gốc
+const imgLine = new Image(); imgLine.src = 'assets/day.png'; 
 const imgTicket = new Image(); imgTicket.src = 'assets/bando.png';
 const imgMonster = new Image(); imgMonster.src = 'assets/chuot.png';
 const imgMSpit = new Image(); imgMSpit.src = 'assets/chuotskill.png';
-const imgHeartFx = new Image(); imgHeartFx.src = 'assets/tim.png'; // Chỉ dùng khi hồi máu
+const imgHeartFx = new Image(); imgHeartFx.src = 'assets/tim.png'; 
 const imgSword = new Image(); imgSword.src = 'assets/kiem.png';
 
 // --- THÔNG SỐ KHÔNG GIAN GAME ---
 const V_WIDTH = 850;   
 const V_HEIGHT = 400;  
 const MAP_WIDTH = 1700; 
-const FLOOR_Y = 320;   // Mặt sàn cỏ bắt đầu từ y=320
+const FLOOR_Y = 320;   // Mặt sàn cỏ bắt đầu từ y = 320
 
-// Kích thước nhân vật được phóng to và căn chỉnh chân chạm sàn
+// Phóng to kích thước nhân vật vạm vỡ
 const CAT_W = 120;
 const CAT_H = 120;
 const MONSTER_W = 70;
@@ -61,6 +61,39 @@ const buttons = {
     jump:   { x: 650, y: 310, w: 60, h: 60, label: "▲", pressed: false },
     action: { x: 730, y: 310, w: 95, h: 60, label: "ATK", pressed: false } 
 };
+
+// Cấu trúc nút bấm "VÀO TEST LUÔN" trên giao diện HTML cũ
+setTimeout(() => {
+    const authBox = document.getElementById('auth-screen');
+    if (authBox && !document.getElementById('test-fast-btn')) {
+        const testBtn = document.createElement('button');
+        testBtn.id = 'test-fast-btn';
+        testBtn.innerText = '⚡ VÀO TEST LUÔN';
+        testBtn.style.marginTop = '10px';
+        testBtn.style.background = '#ff4500';
+        testBtn.style.color = '#fff';
+        testBtn.style.padding = '10px';
+        testBtn.style.border = 'none';
+        testBtn.style.borderRadius = '5px';
+        testBtn.style.cursor = 'pointer';
+        testBtn.style.fontWeight = 'bold';
+        testBtn.onclick = fastTestMode;
+        authBox.appendChild(testBtn);
+    }
+}, 500);
+
+function fastTestMode() {
+    myUsername = "Tester ⚔️";
+    mySlot = 'slot1';
+    buttons.action.label = "KIẾM";
+    document.getElementById('auth-screen').style.display = 'none';
+    canvas.style.display = 'block';
+    gameState = 'playing';
+    try { document.documentElement.requestFullscreen(); } catch(e){}
+    resizeCanvas();
+    initGameWorld();
+    gameLoop();
+}
 
 function resizeCanvas() {
     const windowWidth = window.innerWidth;
@@ -111,7 +144,7 @@ socket.on('gameStarted', () => {
 
 socket.on('peerAction', ({ actionType }) => {
     if (actionType === 'heal') {
-        healEffectTimer = 90; // Hiện tim liên tục trong vòng 1.5 giây (90 frames)
+        healEffectTimer = 90; 
         if (players.slot1) {
             players.slot1.hp = Math.min(players.slot1.maxHp, players.slot1.hp + Math.round(players.slot1.maxHp * 0.2));
         }
@@ -164,10 +197,15 @@ function setupRoomUI(data) {
 function initGameWorld() {
     let pMaxHp = Math.round(100 * Math.pow(1.5, gameLevel - 1));
 
-    // Đặt tọa độ y sao cho chân chạm đúng mặt sàn (FLOOR_Y - CAT_H)
+    // Đặt tọa độ y ban đầu chuẩn sàn cỏ
     players.slot1 = { x: 200, y: FLOOR_Y - CAT_H, vx: 0, vy: 0, state: 'idle', frame: 0, animTick: 0, dir: 1, isGrounded: true, width: CAT_W, height: CAT_H, hp: pMaxHp, maxHp: pMaxHp };
     players.slot2 = { x: 100, y: FLOOR_Y - CAT_H, vx: 0, vy: 0, state: 'idle', frame: 0, animTick: 0, dir: 1, isGrounded: true, width: CAT_W, height: CAT_H, hp: pMaxHp, maxHp: pMaxHp };
     
+    // Nếu chơi chế độ TEST một mình, tạo bù bot slot 2 đứng cạnh cho dây không đứt
+    if (!currentRoomId) {
+        players.slot2.x = 280;
+    }
+
     monsters = [];
     playerProjectiles = [];
     monsterProjectiles = [];
@@ -187,7 +225,7 @@ function spawnMonster(customX) {
     let spawnX = customX !== undefined ? customX : (Math.random() * 1100 + 400);
     monsters.push({
         x: spawnX,
-        y: FLOOR_Y - MONSTER_H, // Căn chuột chạm đúng mặt sàn cỏ
+        y: FLOOR_Y - MONSTER_H, 
         vx: (Math.random() > 0.5 ? 1 : -1) * 1.5,
         hp: mHp, maxHp: mHp,
         width: MONSTER_W, height: MONSTER_H,
@@ -238,9 +276,7 @@ function performAction() {
     if (!me) return;
 
     if (mySlot === 'slot1') {
-        // Kiểm tra hồi chiêu Kiếm (1.5s)
         if (myShootTimer > 0) return;
-        
         me.state = 'attack';
         playerProjectiles.push({
             x: me.x + (me.dir === 1 ? CAT_W : -30),
@@ -248,26 +284,22 @@ function performAction() {
             vx: me.dir * 8,
             w: 50, h: 20
         });
-        socket.emit('playerAction', { roomId: currentRoomId, actionType: 'shoot' });
-        myShootTimer = COOLDOWNS.shoot; // Bắt đầu tính thời gian hồi chiêu
+        if(currentRoomId) socket.emit('playerAction', { roomId: currentRoomId, actionType: 'shoot' });
+        myShootTimer = COOLDOWNS.shoot; 
     } else {
-        // Kiểm tra hồi chiêu Hồi Máu (5s)
         if (myHealTimer > 0) return;
-
-        socket.emit('playerAction', { roomId: currentRoomId, actionType: 'heal' });
-        healEffectTimer = 90; // Kích hoạt tim bay liên tục
+        if(currentRoomId) socket.emit('playerAction', { roomId: currentRoomId, actionType: 'heal' });
+        healEffectTimer = 90; 
         if (players.slot1) {
             players.slot1.hp = Math.min(players.slot1.maxHp, players.slot1.hp + Math.round(players.slot1.maxHp * 0.2));
         }
-        myHealTimer = COOLDOWNS.heal; // Bắt đầu tính thời gian hồi chiêu
+        myHealTimer = COOLDOWNS.heal; 
         
-        // Hỗ trợ nhặt bản đồ chủ động
         if (ticket.spawned && !ticket.pickedUp) {
             if (Math.abs((me.x + CAT_W/2) - ticket.x) < 90) {
                 ticket.pickedUp = true;
             }
         }
-        // Mở cổng bando khi sát cổng
         if (ticket.pickedUp && Math.abs((me.x + CAT_W/2) - (portal.x + 40)) < 90) {
             portal.open = true;
         }
@@ -280,7 +312,6 @@ function update() {
     let me = players[mySlot];
     if(!me) return;
 
-    // Giảm thời gian hồi chiêu theo từng khung hình (Frame)
     if (myShootTimer > 0) myShootTimer--;
     if (myHealTimer > 0) myHealTimer--;
 
@@ -297,12 +328,19 @@ function update() {
         me.vy = -13; me.isGrounded = false;
     }
 
-    me.vy += 0.6.toFixed(1) * 1; // Áp dụng trọng lực nhịp nhàng
+    me.vy += 0.6; 
     me.x += me.vx; me.y += me.vy;
 
-    // Khóa chặt chân chạm sàn cỏ (y = FLOOR_Y - CAT_H) không lo lơ lửng nữa
-    if(me.y >= FLOOR_Y - CAT_H) {
-        me.y = FLOOR_Y - CAT_H; me.vy = 0; me.isGrounded = true;
+    // --- SỬA LỖI LỆCH KHI ĐỨNG IM ---
+    // Vì sprite 'idle' của chú mèo nằm rạp thấp hơn sprite 'run' 20 pixel, 
+    // ta trừ hao độ cao chân chạm sàn động để mèo luôn chạm cỏ đẹp đẽ.
+    let currentFloorLimit = FLOOR_Y - CAT_H;
+    if(me.state === 'idle') {
+        currentFloorLimit = (FLOOR_Y - CAT_H) + 20; 
+    }
+
+    if(me.y >= currentFloorLimit) {
+        me.y = currentFloorLimit; me.vy = 0; me.isGrounded = true;
     }
     if(me.x < 0) me.x = 0; if(me.x > MAP_WIDTH - CAT_W) me.x = MAP_WIDTH - CAT_W;
 
@@ -313,18 +351,25 @@ function update() {
         if(me.animTick % 10 === 0) me.frame = (me.frame + 1) % 3;
     }
 
-    socket.emit('playerUpdate', {
-        roomId: currentRoomId,
-        slot: mySlot,
-        playerData: { x: me.x, y: me.y, state: me.state, frame: me.frame, dir: me.dir }
-    });
+    if(currentRoomId) {
+        socket.emit('playerUpdate', {
+            roomId: currentRoomId,
+            slot: mySlot,
+            playerData: { x: me.x, y: me.y, state: me.state, frame: me.frame, dir: me.dir }
+        });
+    }
 
     cameraX = me.x + CAT_W / 2 - V_WIDTH / 2;
     if(cameraX < 0) cameraX = 0;
     if(cameraX > MAP_WIDTH - V_WIDTH) cameraX = MAP_WIDTH - V_WIDTH;
 
-    // --- CƠ CHẾ SỢI DÂY CO GIÃN LIÊN KẾT (Dùng day.png) ---
+    // --- CƠ CHẾ SỢI DÂY NỐI DAY.PNG LẶP LIÊN TỤC ---
     if (players.slot1 && players.slot2) {
+        // Đồng bộ hạ sàn cho cả đồng đội p2 khi đứng im
+        if(!currentRoomId && players.slot2.state === 'idle') {
+            players.slot2.y = (FLOOR_Y - CAT_H) + 20;
+        }
+        
         let p1Center = players.slot1.x + CAT_W / 2;
         let p2Center = players.slot2.x + CAT_W / 2;
         let dist = Math.abs(p1Center - p2Center);
@@ -333,9 +378,9 @@ function update() {
             ropeWarningTimer++;
             let pullForce = (dist - MAX_ROPE_DIST) * 0.06;
             if (p1Center > p2Center) {
-                players.slot1.x -= pullForce; players.slot2.x += pullForce;
+                players.slot1.x -= pullForce; if(currentRoomId) players.slot2.x += pullForce;
             } else {
-                players.slot1.x += pullForce; players.slot2.x -= pullForce;
+                players.slot1.x += pullForce; if(currentRoomId) players.slot2.x -= pullForce;
             }
             if (ropeWarningTimer > 180) {
                 gameOverReason = "SỢI DÂY ĐỊNH MỆNH ĐÃ BỊ ĐỨT DO HAI BẠN QUÁ XA NHAU!";
@@ -345,7 +390,7 @@ function update() {
         }
     }
 
-    // --- QUÁI VẬT CHUỘT HỒI SINH LIÊN TỤC ---
+    // Quái vật chuột di chuyển tuần tra
     monsters.forEach((m) => {
         m.x += m.vx;
         if(m.x < 50 || m.x > MAP_WIDTH - 100) { m.vx *= -1; }
@@ -365,7 +410,7 @@ function update() {
         }
     });
 
-    // --- ĐẠN KIẾM SÁT THỦ ---
+    // Va chạm đạn kiếm
     playerProjectiles.forEach((p, pIdx) => {
         p.x += p.vx;
         monsters.forEach((m, mIdx) => {
@@ -375,9 +420,9 @@ function update() {
 
                 if (m.hp <= 0) {
                     monsters.splice(mIdx, 1);
-                    spawnMonster(); // CHẾT LÀ HỒI SINH CON KHÁC NGAY
+                    spawnMonster(); 
 
-                    if (!ticket.spawned && Math.random() < 0.35) {
+                    if (!ticket.spawned && Math.random() < 0.5) {
                         ticket.spawned = true;
                         ticket.x = m.x; ticket.y = FLOOR_Y - 45;
                     }
@@ -387,7 +432,7 @@ function update() {
     });
     playerProjectiles = playerProjectiles.filter(p => p.x > 0 && p.x < MAP_WIDTH);
 
-    // --- ĐẠN NƯỚC BỌT CHUỘT ---
+    // Va chạm đạn chuột
     monsterProjectiles.forEach((mp, mpIdx) => {
         mp.x += mp.vx;
         for (let slot in players) {
@@ -404,7 +449,11 @@ function update() {
     monsterProjectiles = monsterProjectiles.filter(mp => mp.x > 0 && mp.x < MAP_WIDTH);
 
     if (portal.open && players.slot1.x > portal.x - 20 && players.slot2.x > portal.x - 20) {
-        if(mySlot === 'slot1') socket.emit('nextLevel', currentRoomId);
+        if(!currentRoomId) {
+            gameLevel++; initGameWorld();
+        } else if(mySlot === 'slot1') {
+            socket.emit('nextLevel', currentRoomId);
+        }
     }
 
     if(healEffectTimer > 0) healEffectTimer--;
@@ -416,47 +465,52 @@ function draw() {
     ctx.save();
     ctx.translate(-cameraX, 0);
 
-    // 1. Vẽ nền trời và Sàn Đứng cố định (Mèo đạp chân lên rìa cỏ mượt mà)
+    // Nền trời và mặt đất
     ctx.fillStyle = '#4682B4'; ctx.fillRect(0, 0, MAP_WIDTH, V_HEIGHT);
     ctx.fillStyle = '#228B22'; ctx.fillRect(0, FLOOR_Y, MAP_WIDTH, V_HEIGHT - FLOOR_Y);
 
-    // 2. Vẽ SỢI DÂY NỐI ĐỊNH MỆNH (Bản gốc dùng day.png cắt lưới 2x2 làm lõi sinh mạng)
+    // VẼ SỢI DÂY NỐI DAY.PNG LẶP LIÊN TỤC TỪ MÈO 1 SANG MÈO 2
     if (players.slot1 && players.slot2) {
         let p1C = { x: players.slot1.x + CAT_W / 2, y: players.slot1.y + CAT_H / 2 };
         let p2C = { x: players.slot2.x + CAT_W / 2, y: players.slot2.y + CAT_H / 2 };
-        let midX = (p1C.x + p2C.x) / 2;
-        let midY = (p1C.y + p2C.y) / 2;
         
-        ctx.beginPath();
-        ctx.strokeStyle = ropeWarningTimer > 0 ? "#ff0000" : "#ffb6c1"; 
-        ctx.lineWidth = ropeWarningTimer > 0 ? 5 : 3;
-        ctx.moveTo(p1C.x, p1C.y); ctx.lineTo(p2C.x, p2C.y); ctx.stroke();
+        let distance = Math.sqrt(Math.pow(p2C.x - p1C.x, 2) + Math.pow(p2C.y - p1C.y, 2));
+        let segments = Math.floor(distance / 25); // Cứ mỗi 25px vẽ 1 mắc xích tơ hồng
         
-        try {
-            // Vẽ lõi tim sinh mạng từ tấm ảnh dây kết nối day.png
-            let singleW = imgLine.width / 2;
-            let singleH = imgLine.height / 2;
-            ctx.drawImage(imgLine, 0, 0, singleW, singleH, midX - 20, midY - 20, 40, 40);
-        } catch(e){}
+        let singleW = imgLine.width / 2;
+        let singleH = imgLine.height / 2;
+
+        for(let i = 0; i <= segments; i++) {
+            let t = segments === 0 ? 0 : i / segments;
+            let currX = p1C.x + (p2C.x - p1C.x) * t;
+            let currY = p1C.y + (p2C.y - p1C.y) * t;
+            
+            try {
+                // Cắt mảnh ô vuông đầu tiên có hình quả tim của file day.png để vẽ dây nối mượt mà
+                ctx.drawImage(imgLine, 0, 0, singleW, singleH, currX - 15, currY - 15, 30, 30);
+            } catch(e) {
+                ctx.fillStyle = '#ffb6c1'; ctx.fillRect(currX - 4, currY - 4, 8, 8);
+            }
+        }
     }
 
-    // 3. Vẽ Cánh Cổng Vượt Ải ở cuối map dài x2
+    // Cổng vượt ải
     ctx.fillStyle = portal.open ? '#00ffcc' : '#8b4513';
     ctx.fillRect(portal.x, portal.y, portal.width, portal.height);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Arial';
     ctx.fillText(portal.open ? "CỔNG MỞ" : "CỔNG KHÓA", portal.x + 2, portal.y - 15);
 
-    // 4. Vẽ Bản đồ bando.png rớt dưới sàn cỏ
+    // Bản đồ rơi dưới sàn
     if (ticket.spawned && !ticket.pickedUp) {
         try { ctx.drawImage(imgTicket, ticket.x, ticket.y, 45, 45); } catch(e){
             ctx.fillStyle = 'orange'; ctx.fillRect(ticket.x, ticket.y, 35, 35);
         }
     }
 
-    // 5. Vẽ Lũ Chuột Quái Vật (Đã hạ chuẩn sàn)
+    // Quái chuột
     monsters.forEach(m => {
         ctx.save();
-        if(m.dir === 1) { // Lật hướng chuột chạy theo vận tốc trái phải
+        if(m.dir === 1) { 
             ctx.translate(m.x + MONSTER_W/2, m.y + MONSTER_H/2); ctx.scale(-1, 1); ctx.translate(-(m.x + MONSTER_W/2), -(m.y + MONSTER_H/2));
         }
         try { ctx.drawImage(imgMonster, m.x, m.y, m.width, m.height); } catch(e){
@@ -468,37 +522,33 @@ function draw() {
         ctx.fillStyle = '#ff3300'; ctx.fillRect(m.x, m.y - 12, m.width * (m.hp / m.maxHp), 5);
     });
 
-    // 6. Vẽ Đạn nước bọt chuotskill.png của Chuột
+    // Đạn nước bọt của chuột
     monsterProjectiles.forEach(mp => {
         try { ctx.drawImage(imgMSpit, mp.x, mp.y, mp.w, mp.h); } catch(e) {
             ctx.fillStyle = 'cyan'; ctx.fillRect(mp.x, mp.y, mp.w, mp.h);
         }
     });
 
-    // 7. Vẽ Đạn Kiếm kiem.png của Sát thủ xoay ĐÂM NGANG bay đi
+    // Đạn kiếm nằm ngang phóng đi
     playerProjectiles.forEach(p => {
         ctx.save();
         ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
-        // Xoay góc 90 độ để cây kiếm từ tư thế dọc sang nằm ngang phóng đi cực mạnh
         ctx.rotate(p.vx > 0 ? Math.PI / 2 : -Math.PI / 2);
-        try {
-            ctx.drawImage(imgSword, -p.h / 2, -p.w / 2, p.h, p.w);
-        } catch(e) {
+        try { ctx.drawImage(imgSword, -p.h / 2, -p.w / 2, p.h, p.w); } catch(e) {
             ctx.fillStyle = 'yellow'; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
         }
         ctx.restore();
     });
 
-    // 8. HIỆU ỨNG TIM.PNG HỒI MÁU HIỆN LIÊN TỤC BAY LÊN TRÊN ĐẦU SÁT THỦ KHI ĐƯỢC BUFF
+    // HIỆU ỨNG TIM.PNG BAY PHẤP PHỚI LIÊN TỤC KHI BẤM SKILL HỒI MÁU
     if (healEffectTimer > 0 && players.slot1) {
         try {
-            // Tim nhấp nháy bay bổng liên tục dựa theo chuỗi giảm dần của bộ đếm Timer
-            let pulseOffsetY = (healEffectTimer % 30) * 1.5; 
-            ctx.drawImage(imgHeartFx, players.slot1.x + CAT_W/2 - 25, players.slot1.y - 50 - pulseOffsetY, 50, 50);
+            let pulseOffsetY = (healEffectTimer % 30) * 1.8; 
+            ctx.drawImage(imgHeartFx, players.slot1.x + CAT_W/2 - 25, players.slot1.y - 45 - pulseOffsetY, 50, 50);
         } catch(e){}
     }
 
-    // 9. Vẽ 2 Chú Mèo (Kích thước to lớn vạm vỡ, đạp chân trên sàn đứng)
+    // Vẽ 2 chú mèo
     for (let slot in players) {
         let p = players[slot];
         if (!p) continue;
@@ -521,67 +571,36 @@ function draw() {
         }
         ctx.restore();
 
-        // Tên tài khoản và Thanh HP người chơi
         ctx.fillStyle = 'white'; ctx.font = 'bold 12px Arial';
-        ctx.fillText((slot === 'slot1' ? "⚔️ " : "📜 ") + (roomData?.players[slot]?.name || "Mèo"), p.x, p.y - 20);
+        ctx.fillText((slot === 'slot1' ? "⚔️ " : "📜 ") + (roomData?.players[slot]?.name || (slot === 'slot1'?'Sát Thủ':'Hỗ Trợ')), p.x, p.y - 20);
         
         ctx.fillStyle = 'red'; ctx.fillRect(p.x, p.y - 12, CAT_W, 6);
         ctx.fillStyle = '#00ff00'; ctx.fillRect(p.x, p.y - 12, CAT_W * (p.hp / p.maxHp), 6);
     }
 
-    ctx.restore(); // Quay về màn hình HUD tĩnh
+    ctx.restore(); 
 
-    // --- 10. GIAO DIỆN HUD TĨNH CỐ ĐỊNH MÀN HÌNH ---
+    // --- HUD CỐ ĐỊNH MÀN HÌNH ---
     ctx.fillStyle = '#ff1493'; ctx.font = 'bold 20px Arial';
     ctx.fillText(`ẢI HIỆN TẠI: ${gameLevel}`, 20, 35);
 
     if (ticket.pickedUp) {
         ctx.fillStyle = '#7fff00'; ctx.font = 'bold 15px Arial';
-        ctx.fillText("✨ ĐÃ CÓ BẢN ĐỒ! HỖ TRỢ CHẠY ĐẾN CỔNG ĐỂ KHAI THÔNG!", 150, 35);
+        ctx.fillText("✨ ĐÃ CÓ BẢN ĐỒ! CHẠY ĐẾN CỔNG ĐỂ KHAI THÔNG!", 150, 35);
     }
 
     if (ropeWarningTimer > 0) {
         ctx.fillStyle = 'red'; ctx.font = 'bold 16px Arial';
-        ctx.fillText(`⚠️ XA NHAU QUÁ! DÂY TƠ HỒNG SẮP ĐỨT: ${Math.max(0, Math.ceil((180-ropeWarningTimer)/60))} Giây`, 20, 70);
+        ctx.fillText(`⚠️ DÂY SẮP ĐỨT: ${Math.max(0, Math.ceil((180-ropeWarningTimer)/60))} Giây`, 20, 70);
     }
 
     if (gameOverReason) {
         ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
         ctx.fillStyle = 'red'; ctx.font = 'bold 30px Arial'; ctx.fillText("GAME OVER", V_WIDTH/2 - 90, V_HEIGHT/2 - 20);
         ctx.fillStyle = 'white'; ctx.font = '15px Arial'; ctx.fillText(gameOverReason, V_WIDTH/2 - 180, V_HEIGHT/2 + 20);
-        ctx.fillStyle = 'yellow'; ctx.fillText("F5 trang để chơi lại cùng người thương nha!", V_WIDTH/2 - 170, V_HEIGHT/2 + 50);
         return;
     }
 
-    // Vẽ nút bấm cảm ứng kèm TEXT HIỂN THỊ THỜI GIAN HỒI CHIÊU (CD Cooldown) trực quan
+    // Vẽ nút bấm HUD kèm bộ đếm ngược CD số giây hồi chiêu trực quan
     for (let b in buttons) {
         let btn = buttons[b];
-        ctx.fillStyle = btn.pressed ? 'rgba(255,105,180,0.8)' : 'rgba(255,255,255,0.35)';
-        ctx.strokeStyle = '#ff69b4'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12); ctx.fill(); ctx.stroke();
-        
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 13px Arial';
-        
-        // Hiển thị text giây đếm ngược lên trên mặt nút bấm ảo luôn
-        if (b === 'action') {
-            if (mySlot === 'slot1' && myShootTimer > 0) {
-                ctx.fillStyle = '#ff0000';
-                ctx.fillText(`CD: ${(myShootTimer/60).toFixed(1)}s`, btn.x + 8, btn.y + (btn.h/2) + 5);
-            } else if (mySlot === 'slot2' && myHealTimer > 0) {
-                ctx.fillStyle = '#ff0000';
-                ctx.fillText(`CD: ${(myHealTimer/60).toFixed(1)}s`, btn.x + 8, btn.y + (btn.h/2) + 5);
-            } else {
-                ctx.fillText(btn.label, btn.x + 8, btn.y + (btn.h/2) + 5);
-            }
-        } else {
-            ctx.fillText(btn.label, btn.x + 22, btn.y + (btn.h/2) + 5);
-        }
-    }
-}
-
-function gameLoop() {
-    if (gameState !== 'playing') return;
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
